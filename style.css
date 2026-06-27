@@ -1,0 +1,1915 @@
+/*====================================================
+                MEDBOOK LANDING PAGE
+======================================================*/
+
+/*================ GOOGLE FONT =================*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/*================ RESET =================*/
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    background:#F7FAFC;
+    color:#1E293B;
+    overflow-x:hidden;
+}
+
+img{
+    width:100%;
+    display:block;
+}
+
+a{
+    text-decoration:none;
+}
+
+ul{
+    list-style:none;
+}
+
+.container{
+    width:min(1200px,90%);
+    margin:auto;
+}
+
+/*================ VARIABLES =================*/
+
+:root{
+
+    --primary:#14B8A6;
+    --primary-dark:#0F766E;
+
+    --secondary:#0F172A;
+
+    --text:#475569;
+
+    --light:#F8FAFC;
+
+    --white:#FFFFFF;
+
+    --border:#E2E8F0;
+
+    --shadow:0 10px 30px rgba(0,0,0,.08);
+
+    --radius:18px;
+
+    --transition:.35s;
+
+}
+
+/*================ BUTTON =================*/
+
+.btn{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:15px 34px;
+
+    background:var(--primary);
+
+    color:#fff;
+
+    border-radius:50px;
+
+    font-weight:600;
+
+    transition:var(--transition);
+
+}
+
+.btn:hover{
+
+    background:var(--primary-dark);
+
+    transform:translateY(-3px);
+
+}
+
+.btn-outline{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:15px 34px;
+
+    border-radius:50px;
+
+    border:2px solid var(--primary);
+
+    color:var(--primary);
+
+    margin-left:15px;
+
+    transition:.35s;
+
+}
+
+.btn-outline:hover{
+
+    background:var(--primary);
+
+    color:#fff;
+
+}
+
+/*================ HEADER =================*/
+
+.header{
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    background:#fff;
+
+    z-index:999;
+
+    box-shadow:0 4px 20px rgba(0,0,0,.05);
+
+}
+
+.nav{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    height:82px;
+
+}
+
+.logo{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    color:var(--primary);
+
+    font-size:28px;
+
+    font-weight:800;
+
+}
+
+.logo i{
+
+    font-size:30px;
+
+}
+
+.menu{
+
+    display:flex;
+
+    gap:35px;
+
+}
+
+.menu a{
+
+    color:var(--secondary);
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.menu a:hover{
+
+    color:var(--primary);
+
+}
+
+.menu-toggle{
+
+    display:none;
+
+    font-size:28px;
+
+    cursor:pointer;
+
+}
+
+/*================ HERO =================*/
+
+.hero{
+
+    padding:170px 0 100px;
+
+    background:linear-gradient(135deg,#F5FFFE,#E9FFFC);
+
+    overflow:hidden;
+
+    position:relative;
+
+}
+
+.hero::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:650px;
+
+    height:650px;
+
+    background:rgba(20,184,166,.08);
+
+    border-radius:50%;
+
+    right:-180px;
+
+    top:-250px;
+
+}
+
+.hero-wrapper{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:60px;
+
+    align-items:center;
+
+}
+
+.badge{
+
+    display:inline-flex;
+
+    gap:10px;
+
+    align-items:center;
+
+    padding:10px 20px;
+
+    background:#D1FAF5;
+
+    border-radius:50px;
+
+    color:var(--primary-dark);
+
+    font-weight:600;
+
+    margin-bottom:25px;
+
+}
+
+.hero h1{
+
+    font-size:58px;
+
+    line-height:1.15;
+
+    margin-bottom:25px;
+
+    color:var(--secondary);
+
+}
+
+.hero h1 span{
+
+    color:var(--primary);
+
+}
+
+.hero p{
+
+    color:var(--text);
+
+    line-height:1.8;
+
+    font-size:17px;
+
+    margin-bottom:35px;
+
+}
+
+.hero-buttons{
+
+    margin-bottom:40px;
+
+}
+
+/*================ SEARCH =================*/
+
+.search-box{
+
+    background:#fff;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:18px;
+
+    border-radius:20px;
+
+    box-shadow:var(--shadow);
+
+    gap:15px;
+
+}
+
+.search-item{
+
+    display:flex;
+
+    align-items:center;
+
+    flex:1;
+
+    gap:15px;
+
+}
+
+.search-item i{
+
+    color:var(--primary);
+
+    font-size:22px;
+
+}
+
+.search-item input{
+
+    width:100%;
+
+    border:none;
+
+    outline:none;
+
+    font-size:16px;
+
+    background:transparent;
+
+}
+
+.search-box button{
+
+    width:58px;
+
+    height:58px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:var(--primary);
+
+    color:#fff;
+
+    cursor:pointer;
+
+    font-size:20px;
+
+    transition:.3s;
+
+}
+
+.search-box button:hover{
+
+    background:var(--primary-dark);
+
+}
+
+/*================ COUNTER =================*/
+
+.hero-counter{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:20px;
+
+    margin-top:45px;
+
+}
+
+.hero-counter div{
+
+    background:#fff;
+
+    text-align:center;
+
+    padding:25px;
+
+    border-radius:18px;
+
+    box-shadow:var(--shadow);
+
+}
+
+.hero-counter h2{
+
+    font-size:34px;
+
+    color:var(--primary);
+
+    margin-bottom:8px;
+
+}
+
+.hero-counter span{
+
+    color:var(--text);
+
+}
+
+/*================ HERO IMAGE =================*/
+
+.hero-right{
+
+    position:relative;
+
+}
+
+.image-card{
+
+    border-radius:35px;
+
+    overflow:hidden;
+
+    box-shadow:0 30px 60px rgba(0,0,0,.12);
+
+}
+
+.image-card img{
+
+    height:650px;
+
+    object-fit:cover;
+
+}
+
+.floating-card{
+
+    position:absolute;
+
+    background:#fff;
+
+    padding:15px 22px;
+
+    border-radius:18px;
+
+    box-shadow:var(--shadow);
+
+    display:flex;
+
+    gap:12px;
+
+    align-items:center;
+
+    animation:float 4s infinite;
+
+}
+
+.floating-card i{
+
+    color:var(--primary);
+
+    font-size:24px;
+
+}
+
+.card1{
+
+    top:60px;
+
+    left:-30px;
+
+}
+
+.card2{
+
+    right:-20px;
+
+    top:220px;
+
+}
+
+.card3{
+
+    left:20px;
+
+    bottom:50px;
+
+}
+
+/*================ ABOUT =================*/
+
+.about{
+
+    padding:120px 0;
+
+    background:#fff;
+
+}
+
+.section-title{
+
+    text-align:center;
+
+    margin-bottom:70px;
+
+}
+
+.section-title span{
+
+    color:var(--primary);
+
+    font-weight:700;
+
+    letter-spacing:2px;
+
+}
+
+.section-title h2{
+
+    font-size:42px;
+
+    margin:15px 0;
+
+    color:var(--secondary);
+
+}
+
+.section-title p{
+
+    width:60%;
+
+    margin:auto;
+
+    color:var(--text);
+
+    line-height:1.8;
+
+}
+
+.about-wrapper{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:70px;
+
+    align-items:center;
+
+}
+
+.about-image img{
+
+    border-radius:25px;
+
+    box-shadow:0 25px 50px rgba(0,0,0,.12);
+
+}
+
+.about-content h3{
+
+    font-size:36px;
+
+    color:var(--secondary);
+
+    margin-bottom:25px;
+
+}
+
+.about-content p{
+
+    line-height:1.9;
+
+    color:var(--text);
+
+    margin-bottom:25px;
+
+}
+
+.about-content ul{
+
+    margin-bottom:35px;
+
+}
+
+.about-content li{
+
+    margin-bottom:18px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    font-size:17px;
+
+}
+
+.about-content li i{
+
+    color:var(--primary);
+
+}
+
+/*================ ANIMATION =================*/
+
+@keyframes float{
+
+    0%{
+
+        transform:translateY(0);
+
+    }
+
+    50%{
+
+        transform:translateY(-12px);
+
+    }
+
+    100%{
+
+        transform:translateY(0);
+
+    }
+
+}
+/*====================================================
+                SPECIALTIES
+======================================================*/
+
+.specialties{
+    padding:120px 0;
+    background:#F8FAFC;
+}
+
+.specialty-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:30px;
+}
+
+.specialty-card{
+    background:#fff;
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    transition:.35s;
+}
+
+.specialty-card:hover{
+    transform:translateY(-12px);
+    box-shadow:0 25px 50px rgba(0,0,0,.15);
+}
+
+.specialty-card img{
+    height:220px;
+    object-fit:cover;
+}
+
+.specialty-content{
+    padding:25px;
+    text-align:center;
+}
+
+.specialty-content i{
+    width:70px;
+    height:70px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:auto;
+    border-radius:50%;
+    background:#D1FAF5;
+    color:var(--primary);
+    font-size:28px;
+    margin-bottom:20px;
+}
+
+.specialty-content h3{
+    font-size:22px;
+    margin-bottom:12px;
+    color:var(--secondary);
+}
+
+.specialty-content p{
+    color:var(--text);
+    line-height:1.7;
+}
+
+/*====================================================
+                FEATURES
+======================================================*/
+
+.features{
+    padding:120px 0;
+    background:#fff;
+}
+
+.feature-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:30px;
+}
+
+.feature-card{
+    background:#fff;
+    border-radius:20px;
+    padding:40px 30px;
+    text-align:center;
+    box-shadow:var(--shadow);
+    transition:.35s;
+    border:1px solid #EDF2F7;
+}
+
+.feature-card:hover{
+    transform:translateY(-10px);
+    border-color:var(--primary);
+}
+
+.feature-card i{
+    width:90px;
+    height:90px;
+    margin:auto;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#D1FAF5;
+    color:var(--primary);
+    font-size:38px;
+    margin-bottom:25px;
+}
+
+.feature-card h3{
+    font-size:24px;
+    margin-bottom:15px;
+}
+
+.feature-card p{
+    color:var(--text);
+    line-height:1.8;
+}
+
+/*====================================================
+                PROCESS
+======================================================*/
+
+.process{
+    padding:120px 0;
+    background:linear-gradient(135deg,#ECFEFF,#F8FAFC);
+}
+
+.process-wrapper{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:25px;
+}
+
+.process-item{
+    background:#fff;
+    border-radius:22px;
+    text-align:center;
+    padding:45px 25px;
+    position:relative;
+    box-shadow:var(--shadow);
+    transition:.35s;
+}
+
+.process-item:hover{
+    transform:translateY(-10px);
+}
+
+.process-number{
+    position:absolute;
+    top:-18px;
+    left:50%;
+    transform:translateX(-50%);
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:var(--primary);
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:700;
+}
+
+.process-item i{
+    font-size:52px;
+    color:var(--primary);
+    margin-bottom:25px;
+}
+
+.process-item h3{
+    font-size:24px;
+    margin-bottom:15px;
+}
+
+.process-item p{
+    color:var(--text);
+    line-height:1.8;
+}
+
+/*====================================================
+                DOCTOR
+======================================================*/
+
+.doctor{
+    padding:120px 0;
+    background:#fff;
+}
+
+.doctorSwiper{
+    padding-bottom:60px;
+}
+
+.doctor-card{
+    background:#fff;
+    border-radius:25px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    transition:.35s;
+}
+
+.doctor-card:hover{
+    transform:translateY(-10px);
+}
+
+.doctor-card img{
+    height:340px;
+    object-fit:cover;
+}
+
+.doctor-info{
+    padding:28px;
+}
+
+.doctor-info h3{
+    font-size:24px;
+    margin-bottom:8px;
+    color:var(--secondary);
+}
+
+.doctor-info span{
+    display:block;
+    color:var(--primary);
+    font-weight:600;
+    margin-bottom:18px;
+}
+
+.rating{
+    margin-bottom:18px;
+    color:#FBBF24;
+}
+
+.doctor-info p{
+    color:var(--text);
+    margin-bottom:25px;
+    line-height:1.8;
+}
+
+.doctor-info .btn{
+    width:100%;
+}
+
+.swiper-pagination-bullet{
+    background:#CBD5E1;
+    opacity:1;
+}
+
+.swiper-pagination-bullet-active{
+    background:var(--primary);
+}
+
+/*====================================================
+                HOSPITAL
+======================================================*/
+
+.hospital{
+    padding:120px 0;
+    background:#F8FAFC;
+}
+
+.hospital-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:30px;
+}
+
+.hospital-card{
+    background:#fff;
+    border-radius:22px;
+    padding:35px;
+    text-align:center;
+    box-shadow:var(--shadow);
+    transition:.35s;
+}
+
+.hospital-card:hover{
+    transform:translateY(-10px);
+}
+
+.hospital-card img{
+    width:90px;
+    margin:auto;
+    margin-bottom:25px;
+}
+
+.hospital-card h3{
+    font-size:22px;
+    color:var(--secondary);
+}
+/*====================================================
+                TESTIMONIAL
+======================================================*/
+
+.testimonial{
+    padding:120px 0;
+    background:#ffffff;
+}
+
+.testimonial-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:30px;
+}
+
+.testimonial-card{
+    background:#fff;
+    padding:35px;
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    transition:.35s;
+}
+
+.testimonial-card:hover{
+    transform:translateY(-10px);
+}
+
+.stars{
+    color:#FBBF24;
+    font-size:22px;
+    margin-bottom:20px;
+}
+
+.testimonial-card p{
+    color:var(--text);
+    line-height:1.9;
+    margin-bottom:25px;
+    font-size:16px;
+}
+
+.user{
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
+
+.user img{
+    width:65px;
+    height:65px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.user h4{
+    font-size:18px;
+    margin-bottom:5px;
+}
+
+.user span{
+    color:#64748B;
+    font-size:14px;
+}
+
+/*====================================================
+                    BLOG
+======================================================*/
+
+.blog{
+    padding:120px 0;
+    background:#F8FAFC;
+}
+
+.blog-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:35px;
+}
+
+.blog-card{
+    background:#fff;
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    transition:.35s;
+}
+
+.blog-card:hover{
+    transform:translateY(-10px);
+}
+
+.blog-card img{
+    height:240px;
+    object-fit:cover;
+}
+
+.blog-content{
+    padding:28px;
+}
+
+.blog-content span{
+    color:var(--primary);
+    font-size:14px;
+    font-weight:600;
+}
+
+.blog-content h3{
+    margin:15px 0;
+    font-size:24px;
+    line-height:1.5;
+    color:var(--secondary);
+}
+
+.blog-content a{
+    color:var(--primary);
+    font-weight:700;
+}
+
+.blog-content a:hover{
+    color:var(--primary-dark);
+}
+
+/*====================================================
+                    FAQ
+======================================================*/
+
+.faq{
+    padding:120px 0;
+    background:#fff;
+}
+
+.faq-list{
+    width:900px;
+    max-width:100%;
+    margin:auto;
+}
+
+.faq-item{
+    background:#fff;
+    border:1px solid #E2E8F0;
+    padding:28px;
+    border-radius:18px;
+    margin-bottom:20px;
+    transition:.35s;
+}
+
+.faq-item:hover{
+    border-color:var(--primary);
+    box-shadow:var(--shadow);
+}
+
+.faq-item h3{
+    color:var(--secondary);
+    font-size:22px;
+    margin-bottom:15px;
+}
+
+.faq-item p{
+    color:var(--text);
+    line-height:1.8;
+}
+
+/*====================================================
+                    CTA
+======================================================*/
+
+.cta{
+
+    padding:100px 0;
+
+    background:linear-gradient(135deg,#14B8A6,#0F766E);
+
+    text-align:center;
+
+    color:#fff;
+
+}
+
+.cta h2{
+
+    font-size:48px;
+
+    margin-bottom:20px;
+
+}
+
+.cta p{
+
+    width:700px;
+
+    max-width:100%;
+
+    margin:auto;
+
+    line-height:1.8;
+
+    margin-bottom:40px;
+
+    opacity:.95;
+
+}
+
+.cta .btn{
+
+    background:#fff;
+
+    color:var(--primary);
+
+}
+
+.cta .btn:hover{
+
+    background:#F1F5F9;
+
+}
+
+/*====================================================
+                    FOOTER
+======================================================*/
+
+footer{
+
+    background:#0F172A;
+
+    color:#CBD5E1;
+
+    padding-top:90px;
+
+}
+
+.footer-grid{
+
+    display:grid;
+
+    grid-template-columns:2fr 1fr 1fr 1fr;
+
+    gap:50px;
+
+    padding-bottom:60px;
+
+}
+
+.footer-grid h2{
+
+    color:#fff;
+
+    margin-bottom:25px;
+
+}
+
+.footer-grid h3{
+
+    color:#fff;
+
+    margin-bottom:22px;
+
+}
+
+.footer-grid p{
+
+    line-height:1.9;
+
+}
+
+.footer-grid ul li{
+
+    margin-bottom:14px;
+
+}
+
+.footer-grid ul a{
+
+    color:#CBD5E1;
+
+    transition:.3s;
+
+}
+
+.footer-grid ul a:hover{
+
+    color:#14B8A6;
+
+}
+
+.social{
+
+    display:flex;
+
+    gap:15px;
+
+    margin-top:20px;
+
+}
+
+.social a{
+
+    width:45px;
+
+    height:45px;
+
+    background:#1E293B;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    color:#fff;
+
+    transition:.35s;
+
+}
+
+.social a:hover{
+
+    background:var(--primary);
+
+    transform:translateY(-5px);
+
+}
+
+footer hr{
+
+    border:none;
+
+    height:1px;
+
+    background:#334155;
+
+}
+
+.copyright{
+
+    text-align:center;
+
+    padding:30px 0;
+
+    color:#94A3B8;
+
+}
+
+/*====================================================
+                EXTRA EFFECTS
+======================================================*/
+
+.specialty-card,
+.feature-card,
+.process-item,
+.doctor-card,
+.hospital-card,
+.testimonial-card,
+.blog-card{
+
+    transition:.35s ease;
+
+}
+
+.specialty-card:hover,
+.feature-card:hover,
+.process-item:hover,
+.doctor-card:hover,
+.hospital-card:hover,
+.testimonial-card:hover,
+.blog-card:hover{
+
+    transform:translateY(-10px);
+
+    box-shadow:0 30px 60px rgba(0,0,0,.12);
+
+}
+
+.section-title{
+
+    margin-bottom:70px;
+
+}
+
+.section-title h2{
+
+    font-weight:800;
+
+}
+
+.section-title span{
+
+    display:inline-block;
+
+    margin-bottom:12px;
+
+}
+
+.section-title p{
+
+    font-size:17px;
+
+}
+/*====================================================
+                BACK TO TOP
+======================================================*/
+
+.back-to-top{
+
+    position:fixed;
+
+    right:25px;
+
+    bottom:25px;
+
+    width:55px;
+
+    height:55px;
+
+    border-radius:50%;
+
+    background:var(--primary);
+
+    color:#fff;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+    box-shadow:0 10px 25px rgba(20,184,166,.4);
+
+    transition:.35s;
+
+    opacity:0;
+
+    visibility:hidden;
+
+    z-index:999;
+
+}
+
+.back-to-top.show{
+
+    opacity:1;
+
+    visibility:visible;
+
+}
+
+.back-to-top:hover{
+
+    background:var(--primary-dark);
+
+    transform:translateY(-5px);
+
+}
+
+/*====================================================
+                CUSTOM SCROLLBAR
+======================================================*/
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#E2E8F0;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:var(--primary);
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:var(--primary-dark);
+
+}
+
+/*====================================================
+                IMAGE HOVER
+======================================================*/
+
+.image-card img,
+.about-image img,
+.specialty-card img,
+.blog-card img,
+.doctor-card img{
+
+    transition:.5s;
+
+}
+
+.image-card:hover img,
+.about-image:hover img,
+.specialty-card:hover img,
+.blog-card:hover img,
+.doctor-card:hover img{
+
+    transform:scale(1.08);
+
+}
+
+/*====================================================
+                FLOATING ANIMATION
+======================================================*/
+
+@keyframes floating{
+
+    0%{
+
+        transform:translateY(0);
+
+    }
+
+    50%{
+
+        transform:translateY(-15px);
+
+    }
+
+    100%{
+
+        transform:translateY(0);
+
+    }
+
+}
+
+.image-card{
+
+    animation:floating 5s ease-in-out infinite;
+
+}
+
+/*====================================================
+                FADE BUTTON
+======================================================*/
+
+.btn{
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+.btn::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:0;
+
+    height:100%;
+
+    background:rgba(255,255,255,.2);
+
+    top:0;
+
+    left:0;
+
+    transition:.4s;
+
+}
+
+.btn:hover::before{
+
+    width:100%;
+
+}
+
+/*====================================================
+                SECTION SPACING
+======================================================*/
+
+section{
+
+    overflow:hidden;
+
+}
+
+/*====================================================
+                MOBILE MENU
+======================================================*/
+
+@media(max-width:992px){
+
+.menu{
+
+    position:fixed;
+
+    top:82px;
+
+    right:-100%;
+
+    width:280px;
+
+    height:calc(100vh - 82px);
+
+    background:#fff;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:flex-start;
+
+    padding-top:40px;
+
+    gap:30px;
+
+    transition:.4s;
+
+    box-shadow:-5px 0 20px rgba(0,0,0,.08);
+
+}
+
+.menu.active{
+
+    right:0;
+
+}
+
+.menu-toggle{
+
+    display:block;
+
+}
+
+.nav-btn{
+
+    display:none;
+
+}
+
+.hero-wrapper{
+
+    grid-template-columns:1fr;
+
+    text-align:center;
+
+}
+
+.hero-buttons{
+
+    display:flex;
+
+    justify-content:center;
+
+    flex-wrap:wrap;
+
+}
+
+.search-box{
+
+    flex-direction:column;
+
+}
+
+.hero-counter{
+
+    grid-template-columns:repeat(2,1fr);
+
+}
+
+.about-wrapper{
+
+    grid-template-columns:1fr;
+
+}
+
+.specialty-grid{
+
+    grid-template-columns:repeat(2,1fr);
+
+}
+
+.feature-grid{
+
+    grid-template-columns:repeat(2,1fr);
+
+}
+
+.process-wrapper{
+
+    grid-template-columns:repeat(2,1fr);
+
+}
+
+.hospital-grid{
+
+    grid-template-columns:repeat(2,1fr);
+
+}
+
+.testimonial-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+.blog-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+.footer-grid{
+
+    grid-template-columns:1fr 1fr;
+
+}
+
+}
+
+/*====================================================
+                MOBILE
+======================================================*/
+
+@media(max-width:768px){
+
+.hero{
+
+    padding-top:140px;
+
+}
+
+.hero h1{
+
+    font-size:42px;
+
+}
+
+.section-title h2{
+
+    font-size:34px;
+
+}
+
+.hero-counter{
+
+    grid-template-columns:1fr;
+
+}
+
+.specialty-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+.feature-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+.process-wrapper{
+
+    grid-template-columns:1fr;
+
+}
+
+.hospital-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+.footer-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+.btn-outline{
+
+    margin-left:0;
+
+    margin-top:15px;
+
+}
+
+.floating-card{
+
+    display:none;
+
+}
+
+.image-card img{
+
+    height:450px;
+
+}
+
+.about-content h3{
+
+    font-size:30px;
+
+}
+
+}
+
+/*====================================================
+                SMALL MOBILE
+======================================================*/
+
+@media(max-width:480px){
+
+.container{
+
+    width:92%;
+
+}
+
+.hero h1{
+
+    font-size:34px;
+
+}
+
+.badge{
+
+    font-size:13px;
+
+}
+
+.section-title h2{
+
+    font-size:28px;
+
+}
+
+.hero-counter h2{
+
+    font-size:28px;
+
+}
+
+.search-box{
+
+    padding:15px;
+
+}
+
+.search-box button{
+
+    width:50px;
+
+    height:50px;
+
+}
+
+.btn{
+
+    width:100%;
+
+}
+
+.btn-outline{
+
+    width:100%;
+
+}
+
+}
+
+/*====================================================
+                DARK MODE (OPTIONAL)
+======================================================*/
+
+.dark{
+
+    background:#0F172A;
+
+    color:#fff;
+
+}
+
+.dark .header{
+
+    background:#1E293B;
+
+}
+
+.dark .doctor-card,
+.dark .feature-card,
+.dark .hospital-card,
+.dark .blog-card,
+.dark .testimonial-card,
+.dark .faq-item{
+
+    background:#1E293B;
+
+    color:#fff;
+
+}
+
+.dark .section-title h2{
+
+    color:#fff;
+
+}
+
+/*====================================================
+                SMOOTH HOVER
+======================================================*/
+
+.card,
+.feature-card,
+.specialty-card,
+.blog-card,
+.doctor-card,
+.hospital-card{
+
+    will-change:transform;
+
+}
+
+/* Làm viền nổi bật cho các thẻ */
+.specialty-card,
+.feature-card,
+.process-item,
+.doctor-card,
+.hospital-card,
+.testimonial-card,
+.blog-card {
+    border: 2px solid var(--primary); /* Viền màu xanh ngọc nổi bật */
+    box-shadow: 0 10px 25px rgba(20,184,166,0.25); /* Đổ bóng nhẹ cùng tông màu */
+}
+
+/* Hiệu ứng khi hover */
+.specialty-card:hover,
+.feature-card:hover,
+.process-item:hover,
+.doctor-card:hover,
+.hospital-card:hover,
+.testimonial-card:hover,
+.blog-card:hover {
+    box-shadow: 0 15px 40px rgba(20,184,166,0.35); /* Đổ bóng mạnh hơn khi hover */
+    border-color: var(--primary-dark); /* Viền chuyển sang màu xanh đậm */
+}
+
+/*====================================================
+                END
+======================================================*/
