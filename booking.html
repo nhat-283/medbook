@@ -1,0 +1,3849 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MedBook – Nền tảng đặt lịch khám bệnh #1</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+        /* ===== RESET & ROOT ===== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        :root {
+            --primary: #14B8A6;
+            --primary-light: #E6F6F3;
+            --primary-dark: #067061;
+            --primary-gradient: linear-gradient(135deg, #14B8A6, #0AA68A);
+            --secondary: #1A3A5C;
+            --accent: #F59E0B;
+            --white: #FFFFFF;
+            --gray-50: #F8FAFC;
+            --gray-100: #F1F5F9;
+            --gray-200: #E2E8F0;
+            --gray-300: #CBD5E1;
+            --gray-400: #94A3B8;
+            --gray-500: #64748B;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1E293B;
+            --gray-900: #0F172A;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Inter', -apple-system, system-ui, sans-serif;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: var(--font);
+            background: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        button {
+            cursor: pointer;
+            font-family: var(--font);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        /* ===== TOP HEADER ===== */
+        .top-header {
+            background: var(--secondary);
+            color: var(--gray-300);
+            font-size: 0.75rem;
+            padding: 6px 0;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .top-header span {
+            opacity: 0.8;
+        }
+        .top-header strong {
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        /* ===== MAIN NAV ===== */
+        .main-nav {
+            background: var(--white);
+            padding: 0 32px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--secondary);
+            text-decoration: none;
+        }
+        .logo i {
+            font-size: 1.6rem;
+            color: var(--primary);
+        }
+        .logo span {
+            color: var(--primary);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .nav-links button {
+            background: transparent;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+        .nav-links button:hover {
+            background: var(--gray-100);
+            color: var(--gray-900);
+        }
+        .nav-links button.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(10, 143, 126, 0.3);
+        }
+        .nav-links button.active:hover {
+            background: var(--primary-dark);
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .btn-outline-nav {
+            background: transparent;
+            border: 1.5px solid var(--gray-300);
+            padding: 7px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--gray-700);
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+        .btn-outline-nav:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+        .btn-primary-nav {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 8px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: white;
+            transition: var(--transition);
+            font-family: var(--font);
+            box-shadow: 0 4px 14px rgba(10, 143, 126, 0.35);
+        }
+        .btn-primary-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(10, 143, 126, 0.4);
+        }
+
+        /* ===== HERO BANNER ===== */
+        .hero {
+            background: linear-gradient(135deg, #14B8A6 0%, #0AA68A 50%, #14B8A6 100%);
+            padding: 48px 32px 56px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        .hero h1 span {
+            color: #FCD34D;
+        }
+        .hero p {
+            font-size: 1.05rem;
+            opacity: 0.9;
+            max-width: 580px;
+            margin: 0 auto 28px;
+            line-height: 1.7;
+        }
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        .hero-stat {
+            text-align: center;
+        }
+        .hero-stat .num {
+            font-size: 2rem;
+            font-weight: 800;
+            display: block;
+            line-height: 1.2;
+        }
+        .hero-stat .label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+
+        /* ===== PAGE WRAPPER ===== */
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+
+        /* ===== STEPS BAR ===== */
+        .steps-bar {
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: center;
+            padding: 0 20px;
+            overflow-x: auto;
+            gap: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 22px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--gray-400);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            white-space: nowrap;
+            font-family: var(--font);
+            background: transparent;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+        .step-item:hover {
+            color: var(--gray-700);
+        }
+        .step-item.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .step-item.done {
+            color: var(--gray-600);
+        }
+        .step-num {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            color: var(--gray-500);
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+        .step-item.active .step-num {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(10, 143, 126, 0.3);
+        }
+        .step-item.done .step-num {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main {
+            display: flex;
+            gap: 24px;
+            padding: 24px 32px 48px;
+            max-width: 1360px;
+            margin: 0 auto;
+        }
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 0;
+        }
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .badge-soft {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 40px;
+            margin-left: 6px;
+        }
+
+        /* ===== FORMS ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+        .fg {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .fg.full {
+            grid-column: 1 / -1;
+        }
+        label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        label .required {
+            color: #EF4444;
+        }
+        input,
+        select,
+        textarea {
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            color: var(--gray-800);
+            background: var(--white);
+            transition: var(--transition);
+            outline: none;
+            font-family: var(--font);
+            width: 100%;
+        }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(10, 143, 126, 0.12);
+        }
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--gray-400);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 72px;
+        }
+
+        /* ===== MAP ===== */
+        #map,
+        #adminMap {
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--gray-200);
+            overflow: hidden;
+            height: 340px;
+        }
+        .map-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .gps-btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font);
+            transition: var(--transition);
+            box-shadow: 0 2px 8px rgba(10, 143, 126, 0.25);
+        }
+        .gps-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(10, 143, 126, 0.3);
+        }
+        .gps-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .gps-status {
+            font-size: 0.78rem;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+        .gps-ok {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .gps-err {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        .gps-wait {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        /* ===== CLINIC LIST ===== */
+        .clinic-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .clinic-item {
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .clinic-item:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .clinic-item.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(10, 143, 126, 0.15);
+        }
+        .clinic-name {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+        .clinic-addr {
+            font-size: 0.76rem;
+            color: var(--gray-500);
+            margin-top: 2px;
+        }
+        .clinic-dist {
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 2px 12px;
+            border-radius: 40px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            align-self: center;
+        }
+        .clinic-filter-info {
+            font-size: 0.82rem;
+            color: var(--gray-500);
+            margin-bottom: 10px;
+            padding: 6px 12px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ===== DOCTOR GRID ===== */
+        .doctor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .doctor-card {
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .doctor-card:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        .doctor-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(10, 143, 126, 0.15);
+        }
+        .doc-av {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 12px rgba(10, 143, 126, 0.25);
+        }
+        .doc-av.specialty-match {
+            background: linear-gradient(135deg, #0AA68A, #0DD9BA);
+        }
+
+        /* ===== SLOTS ===== */
+        .slot-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .slot {
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-xs);
+            padding: 8px 16px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: var(--transition);
+            font-family: var(--font);
+            background: var(--white);
+            color: var(--gray-700);
+            min-width: 100px;
+            text-align: center;
+            position: relative;
+        }
+        .slot.available {
+            border-color: #D1FAE5;
+            background: #F0FDF4;
+            color: #065F46;
+            cursor: pointer;
+        }
+        .slot.available:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+        .slot.selected {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+            transform: scale(1.02);
+        }
+        .slot.booked {
+            border-color: #FCA5A5;
+            background: #FEE2E2;
+            color: #991B1B;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            opacity: 0.7;
+            position: relative;
+        }
+        .slot.booked::after {
+            content: '🔒';
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+        }
+        .slot.past {
+            border-color: #E5E7EB;
+            background: #F9FAFB;
+            color: #9CA3AF;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .slot.conflict {
+            border-color: #FCA5A5;
+            background: #FEE2E2;
+            color: #991B1B;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        /* ===== TAGS / CHIPS ===== */
+        .spec-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .spec-tag {
+            border: 1.5px solid var(--gray-200);
+            border-radius: 40px;
+            padding: 5px 16px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+            background: var(--white);
+            color: var(--gray-600);
+        }
+        .spec-tag:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .spec-tag.sel {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        .spec-tag.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .rem-chip {
+            border: 1.5px solid var(--gray-200);
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+            background: var(--white);
+            color: var(--gray-600);
+        }
+        .rem-chip:hover {
+            border-color: var(--primary);
+        }
+        .rem-chip.sel {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .clinic-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 40px;
+            padding: 4px 14px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            border: none;
+            border-radius: 40px;
+            padding: 10px 24px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 14px rgba(10, 143, 126, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(10, 143, 126, 0.35);
+        }
+        .btn-outline {
+            background: var(--white);
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        .btn-teal {
+            background: linear-gradient(135deg, #0AA68A, #0DD9BA);
+            color: white;
+            box-shadow: 0 4px 14px rgba(10, 166, 138, 0.3);
+        }
+        .btn-teal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(10, 166, 138, 0.35);
+        }
+        .btn-red {
+            background: var(--white);
+            color: #EF4444;
+            border: 1.5px solid #EF4444;
+        }
+        .btn-red:hover {
+            background: #FEE2E2;
+            transform: translateY(-2px);
+        }
+        .btn-sm {
+            padding: 6px 16px;
+            font-size: 0.76rem;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        /* ===== SIDEBAR SUMMARY ===== */
+        .sum-section {
+            font-size: 0.82rem;
+            color: var(--gray-600);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .sum-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .sum-label {
+            font-weight: 600;
+            color: var(--gray-400);
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            flex-shrink: 0;
+        }
+        .sum-val {
+            font-weight: 600;
+            color: var(--gray-800);
+            text-align: right;
+            font-size: 0.85rem;
+        }
+        .sum-div {
+            border: none;
+            border-top: 1px solid var(--gray-200);
+            margin: 4px 0;
+        }
+
+        /* ===== BADGES ===== */
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .badge-green {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .badge-orange {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        .badge-blue {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+        .badge-red {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        /* ===== SECTIONS ===== */
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+
+        /* ===== SUCCESS ===== */
+        .success-card {
+            background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+            border: 2px solid #10B981;
+            border-radius: var(--radius);
+            padding: 32px;
+            text-align: center;
+            display: none;
+        }
+        .success-card.show {
+            display: block;
+        }
+        .appt-code {
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            padding: 10px 24px;
+            margin: 16px auto;
+            display: inline-block;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--gray-800);
+            letter-spacing: 2px;
+            border: 2px dashed var(--primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--gray-400);
+            padding: 32px 16px;
+            font-size: 0.88rem;
+        }
+
+        /* ===== CONFLICT BANNER ===== */
+        .conflict-banner {
+            background: #FEF3C7;
+            border: 1.5px solid #F59E0B;
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            font-size: 0.84rem;
+            color: #92400E;
+            display: none;
+            margin-bottom: 14px;
+        }
+        .conflict-banner.show {
+            display: block;
+        }
+
+        /* ===== ADMIN ===== */
+        .admin-layout {
+            display: flex;
+            min-height: calc(100vh - 72px);
+        }
+        .admin-sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            background: var(--white);
+            border-right: 1px solid var(--gray-200);
+            padding: 20px 0;
+        }
+        .admin-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+            font-family: var(--font);
+            background: transparent;
+            border-top: none;
+            border-right: none;
+            border-bottom: none;
+            width: 100%;
+            text-align: left;
+        }
+        .admin-menu-item:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .admin-menu-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+        .admin-content {
+            flex: 1;
+            padding: 24px 32px;
+            overflow: auto;
+        }
+
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .admin-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--gray-800);
+        }
+
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            text-align: center;
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            box-shadow: var(--shadow);
+            transform: translateY(-2px);
+        }
+        .stat-num {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 0.78rem;
+            color: var(--gray-500);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* TABLES */
+        .tbl-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.84rem;
+        }
+        th {
+            background: var(--gray-50);
+            color: var(--gray-500);
+            font-weight: 700;
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1.5px solid var(--gray-200);
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+            vertical-align: middle;
+        }
+        tr:hover td {
+            background: var(--gray-50);
+        }
+        .tbl-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* SEARCH BAR */
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .search-bar input {
+            max-width: 280px;
+        }
+        .filter-select {
+            max-width: 180px;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-xl);
+            padding: 28px 32px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--gray-800);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--gray-400);
+            line-height: 1;
+            padding: 4px 8px;
+            border-radius: 40px;
+            transition: var(--transition);
+        }
+        .modal-close:hover {
+            background: var(--gray-100);
+            color: var(--gray-800);
+        }
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .modal-grid .fg.full {
+            grid-column: 1 / -1;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .map-pick-hint {
+            font-size: 0.78rem;
+            color: var(--gray-500);
+            margin-top: 10px;
+            padding: 8px 14px;
+            background: var(--primary-light);
+            border-radius: var(--radius-sm);
+        }
+
+        #pickerMap {
+            height: 200px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--gray-200);
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        /* ===== LOGIN ===== */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0F172A 0%, #1A3A5C 100%);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-overlay.show {
+            display: flex;
+        }
+        .login-box {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 40px 44px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+        }
+        .login-icon {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+        .login-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--gray-800);
+            margin-bottom: 4px;
+        }
+        .login-sub {
+            font-size: 0.84rem;
+            color: var(--gray-500);
+            margin-bottom: 24px;
+        }
+        .login-field {
+            position: relative;
+            margin-bottom: 14px;
+        }
+        .login-field input {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition);
+        }
+        .login-field input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(10, 143, 126, 0.12);
+        }
+        .login-field .fi {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            pointer-events: none;
+            color: var(--gray-400);
+        }
+        .login-err {
+            background: #FEE2E2;
+            color: #991B1B;
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            display: none;
+        }
+        .login-err.show {
+            display: block;
+        }
+        .login-btn {
+            width: 100%;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: var(--transition);
+            box-shadow: 0 4px 14px rgba(10, 143, 126, 0.3);
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(10, 143, 126, 0.35);
+        }
+        .login-hint {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+            margin-top: 14px;
+        }
+
+        /* ===== VALIDATION ===== */
+        .input-error {
+            border-color: #EF4444 !important;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12) !important;
+        }
+        .input-success {
+            border-color: #10B981 !important;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12) !important;
+        }
+        .error-message {
+            color: #EF4444;
+            font-size: 0.72rem;
+            font-weight: 600;
+            margin-top: 3px;
+            display: none;
+        }
+        .error-message.show {
+            display: block;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .main {
+                flex-direction: column;
+                padding: 16px 20px 32px;
+            }
+            .sidebar {
+                width: 100%;
+            }
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            .hero-stats {
+                gap: 28px;
+            }
+            .admin-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--gray-200);
+                display: flex;
+                overflow-x: auto;
+                padding: 0;
+            }
+            .admin-menu-item {
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+                padding: 12px 18px;
+            }
+            .admin-menu-item.active {
+                border-bottom-color: var(--primary);
+                border-left-color: transparent;
+            }
+            .admin-content {
+                padding: 16px;
+            }
+            .stat-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            .main-nav {
+                padding: 0 16px;
+                height: 64px;
+                flex-wrap: wrap;
+            }
+            .nav-links button {
+                font-size: 0.75rem;
+                padding: 6px 14px;
+            }
+            .nav-right .btn-outline-nav,
+            .nav-right .btn-primary-nav {
+                font-size: 0.7rem;
+                padding: 5px 14px;
+            }
+            .hero {
+                padding: 32px 16px 40px;
+            }
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            .hero p {
+                font-size: 0.92rem;
+            }
+            .hero-stat .num {
+                font-size: 1.4rem;
+            }
+            .form-grid,
+            .doctor-grid,
+            .modal-grid {
+                grid-template-columns: 1fr;
+            }
+            .steps-bar {
+                gap: 0;
+                padding: 0 8px;
+            }
+            .step-item {
+                padding: 12px 14px;
+                font-size: 0.72rem;
+            }
+            .step-num {
+                width: 22px;
+                height: 22px;
+                font-size: 0.6rem;
+            }
+            .stat-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+            .modal {
+                padding: 20px;
+            }
+            .card {
+                padding: 18px;
+            }
+        }
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.5rem;
+            }
+            .hero-stats {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .stat-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+            .nav-links {
+                gap: 2px;
+            }
+            .nav-links button {
+                font-size: 0.7rem;
+                padding: 4px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== TOP HEADER ===== -->
+    <div class="top-header">
+        <span>🏥 <strong>MedBook</strong> · Nền tảng đặt lịch khám bệnh #1 Việt Nam · Hỗ trợ 24/7</span>
+    </div>
+
+    <!-- ===== MAIN NAV ===== -->
+    <nav class="main-nav">
+        <div class="nav-left">
+            <a href="#" class="logo">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <span>MedBook</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <button class="active" onclick="switchPage('patient')">📅 Đặt lịch khám</button>
+            <button onclick="switchPage('admin')">⚙️ Quản trị</button>
+        </div>
+        <div class="nav-right">
+            <button class="btn-outline-nav" onclick="switchPage('admin')">🔐 Admin</button>
+            <button class="btn-primary-nav" onclick="document.getElementById('page-patient').scrollIntoView({behavior:'smooth'})">Đặt lịch ngay</button>
+        </div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">✨ Nền tảng y tế số 1 Việt Nam</div>
+            <h1>Đặt lịch khám với <span>Bác sĩ chuyên gia</span> hàng đầu</h1>
+            <p>Kết nối trực tiếp với hơn 5.000+ bác sĩ tại 500+ bệnh viện và phòng khám uy tín trên toàn quốc</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="num">100K+</span>
+                    <span class="label">Lượt đặt lịch</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="num">98%</span>
+                    <span class="label">Hài lòng</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="num">24/7</span>
+                    <span class="label">Hỗ trợ</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="num">Miễn phí</span>
+                    <span class="label">Đặt lịch</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PATIENT PAGE ==================== -->
+    <div class="page active" id="page-patient">
+        <div class="steps-bar">
+            <button class="step-item active" id="stp1" onclick="gotoStep(1)"><span class="step-num">1</span>Thông tin</button>
+            <button class="step-item" id="stp2" onclick="gotoStep(2)"><span class="step-num">2</span>Phòng khám</button>
+            <button class="step-item" id="stp3" onclick="gotoStep(3)"><span class="step-num">3</span>Bác sĩ</button>
+            <button class="step-item" id="stp4" onclick="gotoStep(4)"><span class="step-num">4</span>Thời gian</button>
+            <button class="step-item" id="stp5" onclick="gotoStep(5)"><span class="step-num">5</span>Xác nhận</button>
+        </div>
+
+        <div class="main">
+            <div class="panel">
+
+                <!-- STEP 1 -->
+                <div class="section active" id="step1">
+                    <div class="card">
+                        <div class="card-title">👤 Thông tin bệnh nhân</div>
+                        <div class="form-grid">
+                            <div class="fg">
+                                <label>Họ và tên <span class="required">*</span></label>
+                                <input id="patName" placeholder="Nguyễn Văn A" oninput="updateSummary()" />
+                                <div class="error-message" id="nameError"></div>
+                            </div>
+                            <div class="fg">
+                                <label>Ngày sinh</label>
+                                <input type="date" id="patDob" />
+                                <div class="error-message" id="dobError"></div>
+                            </div>
+                            <div class="fg">
+                                <label>Số điện thoại <span class="required">*</span></label>
+                                <input type="tel" id="patPhone" placeholder="0901 234 567" />
+                                <div class="error-message" id="phoneError"></div>
+                            </div>
+                            <div class="fg">
+                                <label>Email <span class="required">*</span></label>
+                                <input type="email" id="patEmail" placeholder="patient@email.com" oninput="updateSummary()" />
+                                <div class="error-message" id="emailError"></div>
+                            </div>
+                        </div>
+                        <div style="margin-top:8px;font-size:0.75rem;color:var(--gray-400);">
+                            <span id="formStatus">✅ Vui lòng điền đầy đủ thông tin</span>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🩺 Triệu chứng &amp; Chuyên khoa</div>
+                        <div class="fg" style="margin-bottom:12px">
+                            <label>Mô tả triệu chứng</label>
+                            <textarea id="symptoms" placeholder="Ví dụ: đau đầu, sốt cao, ho khan..." oninput="matchSymptoms()"></textarea>
+                        </div>
+                        <div id="symMatchInfo" style="font-size:0.8rem;color:var(--primary);margin-bottom:10px;min-height:20px;"></div>
+                        <label>Chọn nhanh chuyên khoa</label>
+                        <div class="spec-tags" id="specQuickTags" style="margin-top:6px;"></div>
+                        <div style="margin-top:16px;">
+                            <button class="btn btn-primary" onclick="gotoStep2WithValidate()">Tiếp theo →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2 -->
+                <div class="section" id="step2">
+                    <div class="card">
+                        <div class="card-title">📍 Bản đồ – Tìm phòng khám gần bạn</div>
+                        <div class="map-controls">
+                            <button class="gps-btn" id="gpsBtn" onclick="getGPS()">📡 Lấy vị trí GPS</button>
+                            <span id="gpsStatus" class="gps-status gps-wait">⏳ Chưa lấy GPS</span>
+                        </div>
+                        <div id="map"></div>
+                        <div style="font-size:0.76rem;color:var(--gray-400);margin-top:8px;">
+                            📡 Nhấn "Lấy vị trí GPS" để xác định vị trí thật · 🏥 Click icon bệnh viện để chọn
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🏥 Danh sách phòng khám <span class="badge-soft" id="clinicCountBadge">sắp xếp theo khoảng cách</span></div>
+                        <div class="clinic-filter-info" id="clinicFilterInfo">
+                            <span id="clinicFilterMessage">🏥 Hiển thị tất cả phòng khám</span>
+                        </div>
+                        <div class="clinic-list" id="clinicList"></div>
+                        <div style="margin-top:16px;display:flex;gap:10px;">
+                            <button class="btn btn-outline" onclick="gotoStep(1)">← Quay lại</button>
+                            <button class="btn btn-primary" id="btnS3" onclick="gotoStep(3)" disabled>Tiếp theo →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3 -->
+                <div class="section" id="step3">
+                    <div class="card">
+                        <div class="card-title">🔬 Lọc theo chuyên khoa</div>
+                        <div class="spec-tags" id="specFilterTags"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">👨‍⚕️ Chọn bác sĩ</div>
+                        <div class="doctor-grid" id="doctorGrid"><div class="empty-state">Chọn chuyên khoa để xem bác sĩ</div></div>
+                        <div style="margin-top:16px;display:flex;gap:10px;">
+                            <button class="btn btn-outline" onclick="gotoStep(2)">← Quay lại</button>
+                            <button class="btn btn-primary" id="btnS4" onclick="gotoStep(4)" disabled>Tiếp theo →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4 -->
+                <div class="section" id="step4">
+                    <div class="card">
+                        <div class="card-title">📅 Chọn ngày &amp; giờ khám</div>
+                        <div class="fg" style="max-width:220px;margin-bottom:14px;">
+                            <label>Ngày khám <span class="required">*</span></label>
+                            <input type="date" id="apptDate" min="2026-01-01" onchange="loadTimeSlots()" />
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--gray-500);margin-bottom:12px;padding:8px 12px;background:var(--gray-50);border-radius:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                            <span id="slotCount">📊 Chọn ngày để xem khung giờ</span>
+                            <span style="display:flex;gap:12px;font-size:0.75rem;">
+                                <span>🟢 <span style="color:#065F46;">Trống</span></span>
+                                <span>🔴 <span style="color:#991B1B;">Đã đặt</span></span>
+                                <span>⚪ <span style="color:#9CA3AF;">Đã qua</span></span>
+                            </span>
+                        </div>
+                        <div id="conflictBanner" class="conflict-banner">
+                            <strong>⚠️ Phát hiện trùng lịch!</strong>
+                            <span id="conflictMsg"></span>
+                        </div>
+                        <div class="slot-grid" id="slotGrid">
+                            <div class="empty-state">📅 Chọn ngày để xem khung giờ</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🔔 Nhắc lịch qua email</div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <div class="rem-chip sel" onclick="toggleRem(this,'1h')">1 giờ trước</div>
+                            <div class="rem-chip" onclick="toggleRem(this,'3h')">3 giờ trước</div>
+                            <div class="rem-chip sel" onclick="toggleRem(this,'1d')">1 ngày trước</div>
+                            <div class="rem-chip" onclick="toggleRem(this,'3d')">3 ngày trước</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;">
+                        <button class="btn btn-outline" onclick="gotoStep(3)">← Quay lại</button>
+                        <button class="btn btn-primary" id="btnS5" onclick="gotoStep(5)" disabled>Tiếp theo →</button>
+                    </div>
+                </div>
+
+                <!-- STEP 5 -->
+                <div class="section" id="step5">
+                    <div class="card" id="confirmCard">
+                        <div class="card-title">✅ Xác nhận đặt lịch</div>
+                        <div id="confirmSummary" style="font-size:0.88rem;line-height:2;"></div>
+                        <div class="fg" style="margin-top:14px;">
+                            <label>Ghi chú cho bác sĩ</label>
+                            <textarea id="notes" placeholder="Dị ứng thuốc, tiền sử bệnh..."></textarea>
+                        </div>
+                        <div style="margin-top:18px;display:flex;gap:10px;">
+                            <button class="btn btn-outline" onclick="gotoStep(4)">← Quay lại</button>
+                            <button class="btn btn-teal" onclick="confirmBooking()">🗓 Xác nhận đặt lịch</button>
+                        </div>
+                    </div>
+                    <div class="success-card" id="successCard">
+                        <div style="font-size:3rem;margin-bottom:6px;">🎉</div>
+                        <div style="font-size:1.3rem;font-weight:800;color:#065F46;">Đặt lịch thành công!</div>
+                        <div class="appt-code" id="apptCode">MED-000000</div>
+                        <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:12px 16px;margin-top:12px;font-size:0.84rem;color:var(--primary);">
+                            📧 Email xác nhận đã gửi đến <strong id="emailDisplay"></strong>
+                        </div>
+                        <div style="margin-top:12px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                            <button class="btn btn-outline btn-sm" onclick="resendEmail()">📧 Gửi lại email</button>
+                            <button class="btn btn-primary" onclick="resetApp()">📋 Đặt lịch mới</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- panel -->
+
+            <!-- SIDEBAR -->
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-title">📋 Tóm tắt lịch hẹn</div>
+                    <div class="sum-section">
+                        <div class="sum-row"><span class="sum-label">Bệnh nhân</span><span class="sum-val" id="s-name">—</span></div>
+                        <div class="sum-row"><span class="sum-label">Email</span><span class="sum-val" id="s-email" style="font-size:0.75rem;">—</span></div>
+                        <hr class="sum-div" />
+                        <div class="sum-row"><span class="sum-label">Phòng khám</span><span class="sum-val" id="s-clinic">—</span></div>
+                        <div class="sum-row"><span class="sum-label">Khoảng cách</span><span class="sum-val" id="s-dist">—</span></div>
+                        <hr class="sum-div" />
+                        <div class="sum-row"><span class="sum-label">Chuyên khoa</span><span class="sum-val" id="s-spec">—</span></div>
+                        <div class="sum-row"><span class="sum-label">Bác sĩ</span><span class="sum-val" id="s-doctor">—</span></div>
+                        <hr class="sum-div" />
+                        <div class="sum-row"><span class="sum-label">Ngày khám</span><span class="sum-val" id="s-date">—</span></div>
+                        <div class="sum-row"><span class="sum-label">Giờ khám</span><span class="sum-val" id="s-time">—</span></div>
+                        <div class="sum-row"><span class="sum-label">Nhắc lịch</span><span class="sum-val" id="s-remind">1h, 1d trước</span></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📊 Dữ liệu hệ thống</div>
+                    <div style="font-size:0.8rem;color:var(--gray-500);line-height:2;">
+                        <div>📁 Số phòng khám – <strong id="cliCount">0</strong></div>
+                        <div>📁 Số bác sĩ – <strong id="docCount">0</strong></div>
+                        <div>📁 Lịch hẹn – <strong id="apptCount">0</strong></div>
+                        <div style="margin-top:4px;color:var(--primary);">✅ Hệ thống sẵn sàng</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- end patient page -->
+
+    <!-- ==================== ADMIN PAGE ==================== -->
+    <div class="page" id="page-admin">
+        <div class="admin-layout">
+            <div class="admin-sidebar">
+                <button class="admin-menu-item active" onclick="adminTab('dashboard')">📊 Dashboard</button>
+                <button class="admin-menu-item" onclick="adminTab('appointments')">📅 Lịch hẹn</button>
+                <button class="admin-menu-item" onclick="adminTab('doctors')">👨‍⚕️ Bác sĩ</button>
+                <button class="admin-menu-item" onclick="adminTab('clinics')">🏥 Phòng khám</button>
+            </div>
+            <div class="admin-content">
+
+                <!-- DASHBOARD -->
+                <div id="atab-dashboard" style="display:block;">
+                    <div class="admin-header">
+                        <div class="admin-title">📊 Tổng quan hệ thống</div>
+                        <button class="btn btn-outline btn-sm" onclick="adminLogout()">🚪 Đăng xuất</button>
+                    </div>
+                    <div class="stat-cards">
+                        <div class="stat-card"><div class="stat-num" id="ad-appts">0</div><div class="stat-label">Lịch hẹn</div></div>
+                        <div class="stat-card"><div class="stat-num" id="ad-docs">0</div><div class="stat-label">Bác sĩ</div></div>
+                        <div class="stat-card"><div class="stat-num" id="ad-clis">0</div><div class="stat-label">Phòng khám</div></div>
+                        <div class="stat-card"><div class="stat-num" id="ad-today">0</div><div class="stat-label">Lịch hôm nay</div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📅 Lịch hẹn gần nhất</div>
+                        <div class="tbl-wrap"><table id="dashApptTbl"></table></div>
+                    </div>
+                </div>
+
+                <!-- APPOINTMENTS -->
+                <div id="atab-appointments" style="display:none;">
+                    <div class="admin-header">
+                        <div class="admin-title">📅 Quản lý lịch hẹn</div>
+                        <button class="btn btn-primary btn-sm" onclick="openModal('appt','new')">+ Thêm lịch hẹn</button>
+                    </div>
+                    <div class="search-bar">
+                        <input id="apptSearch" placeholder="🔍 Tìm tên bệnh nhân..." oninput="renderApptTable()" />
+                        <select id="apptFilter" class="filter-select" onchange="renderApptTable()">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="confirmed">✅ Đã xác nhận</option>
+                            <option value="pending">⏳ Chờ xác nhận</option>
+                            <option value="cancelled">❌ Đã hủy</option>
+                        </select>
+                    </div>
+                    <div class="card"><div class="tbl-wrap"><table id="apptTable"></table></div></div>
+                </div>
+
+                <!-- DOCTORS -->
+                <div id="atab-doctors" style="display:none;">
+                    <div class="admin-header">
+                        <div class="admin-title">👨‍⚕️ Quản lý bác sĩ</div>
+                        <button class="btn btn-primary btn-sm" onclick="openModal('doctor','new')">+ Thêm bác sĩ</button>
+                    </div>
+                    <div class="search-bar">
+                        <input id="docSearch" placeholder="🔍 Tìm tên bác sĩ..." oninput="renderDocTable()" />
+                        <select id="docSpecFilter" class="filter-select" onchange="renderDocTable()">
+                            <option value="">Tất cả chuyên khoa</option>
+                        </select>
+                    </div>
+                    <div class="card"><div class="tbl-wrap"><table id="docTable"></table></div></div>
+                </div>
+
+                <!-- CLINICS -->
+                <div id="atab-clinics" style="display:none;">
+                    <div class="admin-header">
+                        <div class="admin-title">🏥 Quản lý phòng khám</div>
+                        <button class="btn btn-primary btn-sm" onclick="openModal('clinic','new')">+ Thêm phòng khám</button>
+                    </div>
+                    <div class="search-bar">
+                        <input id="cliSearch" placeholder="🔍 Tìm tên phòng khám..." oninput="renderCliTable()" />
+                    </div>
+                    <div class="card"><div class="tbl-wrap"><table id="cliTable"></table></div></div>
+                    <div class="card" style="margin-top:16px;">
+                        <div class="card-title">🗺️ Bản đồ phòng khám</div>
+                        <div id="adminMap"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div><!-- end admin page -->
+
+    <!-- ==================== MODALS ==================== -->
+    <!-- Appointment Modal -->
+    <div class="modal-overlay" id="modalAppt">
+        <div class="modal">
+            <div class="modal-title"><span id="mApptTitle">Thêm lịch hẹn</span><button class="modal-close" onclick="closeModal('Appt')">✕</button></div>
+            <div class="modal-grid">
+                <div class="fg full"><label>Tên bệnh nhân <span class="required">*</span></label><input id="mApptPatient" placeholder="Nguyễn Văn A" /></div>
+                <div class="fg"><label>Bác sĩ <span class="required">*</span></label><select id="mApptDoctor"></select></div>
+                <div class="fg"><label>Phòng khám <span class="required">*</span></label><select id="mApptClinic"></select></div>
+                <div class="fg"><label>Ngày khám <span class="required">*</span></label><input type="date" id="mApptDate" /></div>
+                <div class="fg"><label>Giờ khám <span class="required">*</span></label><select id="mApptTime"></select></div>
+                <div class="fg"><label>Trạng thái</label>
+                    <select id="mApptStatus">
+                        <option value="confirmed">✅ Đã xác nhận</option>
+                        <option value="pending">⏳ Chờ xác nhận</option>
+                        <option value="cancelled">❌ Đã hủy</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('Appt')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveAppt()">💾 Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Modal -->
+    <div class="modal-overlay" id="modalDoctor">
+        <div class="modal">
+            <div class="modal-title"><span id="mDocTitle">Thêm bác sĩ</span><button class="modal-close" onclick="closeModal('Doctor')">✕</button></div>
+            <div class="modal-grid">
+                <div class="fg full"><label>Họ tên bác sĩ <span class="required">*</span></label><input id="mDocName" placeholder="BS. Nguyễn Thị A" /></div>
+                <div class="fg"><label>Chuyên khoa <span class="required">*</span></label><input id="mDocSpec" placeholder="Tim mạch" /></div>
+                <div class="fg"><label>Phòng khám <span class="required">*</span></label><select id="mDocClinic"></select></div>
+                <div class="fg"><label>Kinh nghiệm (năm)</label><input type="number" id="mDocExp" placeholder="10" min="0" /></div>
+                <div class="fg"><label>Đánh giá (1-5)</label><input type="number" id="mDocRating" placeholder="4.8" min="1" max="5" step="0.1" /></div>
+                <div class="fg full"><label>Triệu chứng điều trị (cách nhau bởi dấu phẩy)</label><input id="mDocSymptoms" placeholder="đau đầu,sốt,ho..." /></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('Doctor')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveDoctor()">💾 Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clinic Modal -->
+    <div class="modal-overlay" id="modalClinic">
+        <div class="modal">
+            <div class="modal-title"><span id="mCliTitle">Thêm phòng khám</span><button class="modal-close" onclick="closeModal('Clinic')">✕</button></div>
+            <div class="modal-grid">
+                <div class="fg full"><label>Tên phòng khám <span class="required">*</span></label><input id="mCliName" placeholder="Bệnh viện XYZ" /></div>
+                <div class="fg full"><label>Địa chỉ <span class="required">*</span></label><input id="mCliAddr" placeholder="Số nhà, đường, quận, Hà Nội" oninput="geocodeClinicAddr()" /></div>
+                <div class="fg"><label>Vĩ độ (Lat)</label><input type="number" id="mCliLat" step="any" placeholder="21.028" oninput="updatePickerMarker()" /></div>
+                <div class="fg"><label>Kinh độ (Lng)</label><input type="number" id="mCliLng" step="any" placeholder="105.852" oninput="updatePickerMarker()" /></div>
+                <div class="fg full"><label>Chuyên khoa (cách nhau bởi dấu phẩy)</label><input id="mCliSpecs" placeholder="Tim mạch,Nội tiết,..." /></div>
+            </div>
+            <div class="map-pick-hint">🗺️ Nhập địa chỉ để tự động định vị, hoặc click trực tiếp trên bản đồ để chọn toạ độ chính xác</div>
+            <div id="pickerMap"></div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('Clinic')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveClinic()">💾 Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login -->
+    <div class="login-overlay" id="adminLogin">
+        <div class="login-box">
+            <div class="login-icon">🔐</div>
+            <div class="login-title">Đăng nhập Admin</div>
+            <div class="login-sub">Chỉ dành cho quản trị viên hệ thống MedBook</div>
+            <div class="login-err" id="loginErr">❌ Tên đăng nhập hoặc mật khẩu không đúng!</div>
+            <div class="login-field">
+                <span class="fi">👤</span>
+                <input type="text" id="loginUser" placeholder="Tên đăng nhập" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()" />
+            </div>
+            <div class="login-field">
+                <span class="fi">🔑</span>
+                <input type="password" id="loginPass" placeholder="Mật khẩu" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" />
+            </div>
+            <button class="login-btn" onclick="doLogin()">Đăng nhập →</button>
+            <div class="login-hint">Demo: admin / medbook2024</div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete -->
+    <div class="modal-overlay" id="modalConfirm">
+        <div class="modal" style="max-width:380px;text-align:center;">
+            <div style="font-size:2.8rem;margin-bottom:6px;">🗑️</div>
+            <div style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-bottom:6px;">Xác nhận xóa</div>
+            <div id="confirmDelMsg" style="font-size:0.88rem;color:var(--gray-500);margin-bottom:18px;"></div>
+            <div style="display:flex;gap:12px;justify-content:center;">
+                <button class="btn btn-outline" onclick="closeModal('Confirm')">Hủy</button>
+                <button class="btn btn-red" onclick="execDelete()">🗑️ Xóa</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  EMAILJS CONFIGURATION
+        // ============================================================
+        const EMAIL_CONFIG = {
+            publicKey: 'ytC65KJnXw1ztl97N',
+            serviceID: 'service_xqaglao',
+            templateID: 'template_4qb4hx7'
+        };
+
+        // Khởi tạo EmailJS
+        emailjs.init(EMAIL_CONFIG.publicKey);
+
+        // ============================================================
+        //  DATA: CLINICS & DOCTORS
+        // ============================================================
+       // ============================================================
+//  DATA: 50 CLINICS & 300 DOCTORS (THAY THẾ HOÀN TOÀN)
+// ============================================================
+
+let clinics = [
+    // === QUẬN HÀ ĐÔNG (25 cơ sở) ===
+    { id: 'C001', name: 'Bệnh viện Đa khoa Hà Đông', address: '35 Nguyễn Quý Đức, Hà Đông, Hà Nội', lat: 20.9710, lng: 105.7760, specialties: 'Nội khoa,Ngoại khoa,Sản nhi,Tim mạch,Hô hấp' },
+    { id: 'C002', name: 'Bệnh viện Quân Y 103 - Hà Đông', address: '261 Nguyễn Trãi, Hà Đông, Hà Nội', lat: 20.9750, lng: 105.7730, specialties: 'Đa khoa,Ngoại khoa,Chấn thương chỉnh hình,Nội tiết' },
+    { id: 'C003', name: 'Phòng khám Đa khoa Hà Đông', address: '88 Nguyễn Trãi, Hà Đông, Hà Nội', lat: 20.9680, lng: 105.7800, specialties: 'Nội khoa,Ngoại khoa,Sản phụ khoa,Nhi khoa' },
+    { id: 'C004', name: 'Bệnh viện Đa khoa Quốc tế An Phúc', address: '120 Lê Trọng Tấn, Hà Đông, Hà Nội', lat: 20.9730, lng: 105.7820, specialties: 'Đa khoa,Tim mạch,Nội tiết,Nhi khoa' },
+    { id: 'C005', name: 'Phòng khám Chuyên khoa Tai Mũi Họng Hà Đông', address: '56 Ngô Gia Tự, Hà Đông, Hà Nội', lat: 20.9700, lng: 105.7780, specialties: 'Tai mũi họng' },
+    { id: 'C006', name: 'Phòng khám Chuyên khoa Mắt Hà Đông', address: '12 Lê Văn Lương, Hà Đông, Hà Nội', lat: 20.9740, lng: 105.7790, specialties: 'Nhãn khoa' },
+    { id: 'C007', name: 'Phòng khám Răng Hàm Mặt Hà Đông', address: '33 Quang Trung, Hà Đông, Hà Nội', lat: 20.9720, lng: 105.7770, specialties: 'Răng hàm mặt' },
+    { id: 'C008', name: 'Bệnh viện Sản Nhi Hà Đông', address: '45 Ngô Quyền, Hà Đông, Hà Nội', lat: 20.9690, lng: 105.7750, specialties: 'Sản phụ khoa,Nhi khoa' },
+    { id: 'C009', name: 'Phòng khám Đa khoa Y tế Hà Đông', address: '79 Trần Phú, Hà Đông, Hà Nội', lat: 20.9760, lng: 105.7740, specialties: 'Nội khoa,Ngoại khoa,Da liễu' },
+    { id: 'C010', name: 'Phòng khám Chuyên khoa Cơ xương khớp Hà Đông', address: '22 Nguyễn Khuyến, Hà Đông, Hà Nội', lat: 20.9705, lng: 105.7765, specialties: 'Cơ xương khớp,Phục hồi chức năng' },
+    { id: 'C011', name: 'Bệnh viện Đa khoa Hoàn Mỹ Hà Đông', address: '150 Nguyễn Trãi, Hà Đông, Hà Nội', lat: 20.9770, lng: 105.7720, specialties: 'Đa khoa,Nội tiết,Tim mạch,Ung bướu' },
+    { id: 'C012', name: 'Phòng khám Đông y Hà Đông', address: '67 Lê Lợi, Hà Đông, Hà Nội', lat: 20.9715, lng: 105.7785, specialties: 'Đông y,Vật lý trị liệu' },
+    { id: 'C013', name: 'Phòng khám Nhi khoa Hà Đông', address: '38 Hà Cầu, Hà Đông, Hà Nội', lat: 20.9735, lng: 105.7805, specialties: 'Nhi khoa' },
+    { id: 'C014', name: 'Phòng khám Da liễu Hà Đông', address: '91 Lê Quý Đôn, Hà Đông, Hà Nội', lat: 20.9745, lng: 105.7755, specialties: 'Da liễu' },
+    { id: 'C015', name: 'Bệnh viện Đa khoa Phương Đông', address: '60 Nguyễn Trãi, Hà Đông, Hà Nội', lat: 20.9660, lng: 105.7810, specialties: 'Nội khoa,Ngoại khoa,Sản nhi' },
+    { id: 'C016', name: 'Phòng khám Đa khoa Hà Đông Star', address: '45 Lê Trọng Tấn, Hà Đông, Hà Nội', lat: 20.9755, lng: 105.7830, specialties: 'Tim mạch,Nội tiết,Hô hấp' },
+    { id: 'C017', name: 'Phòng khám Chuyên khoa Dị ứng Hà Đông', address: '17 Tô Hiệu, Hà Đông, Hà Nội', lat: 20.9725, lng: 105.7775, specialties: 'Dị ứng,Da liễu' },
+    { id: 'C018', name: 'Phòng khám Vật lý trị liệu Hà Đông', address: '56 Quang Trung, Hà Đông, Hà Nội', lat: 20.9702, lng: 105.7792, specialties: 'Phục hồi chức năng,Vật lý trị liệu' },
+    { id: 'C019', name: 'Bệnh viện Đa khoa Quốc tế Hà Đông', address: '108 Lê Lợi, Hà Đông, Hà Nội', lat: 20.9695, lng: 105.7800, specialties: 'Đa khoa,Nội khoa,Ngoại khoa' },
+    { id: 'C020', name: 'Phòng khám Đa khoa Ngô Quyền', address: '12 Ngô Quyền, Hà Đông, Hà Nội', lat: 20.9685, lng: 105.7762, specialties: 'Nội khoa,Nhi khoa,Tai mũi họng' },
+    { id: 'C021', name: 'Bệnh viện Đa khoa Hà Đông 2', address: '234 Quang Trung, Hà Đông, Hà Nội', lat: 20.9728, lng: 105.7745, specialties: 'Đa khoa,Nội khoa,Ngoại khoa' },
+    { id: 'C022', name: 'Phòng khám Đa khoa Hà Đông Mới', address: '45 Nguyễn Văn Lộc, Hà Đông, Hà Nội', lat: 20.9698, lng: 105.7778, specialties: 'Nội khoa,Nhi khoa,Da liễu' },
+    { id: 'C023', name: 'Bệnh viện Đa khoa Hà Đông 3', address: '12 Lê Văn Lương, Hà Đông, Hà Nội', lat: 20.9742, lng: 105.7782, specialties: 'Đa khoa,Tim mạch,Nội tiết' },
+    { id: 'C024', name: 'Phòng khám Chuyên khoa Nội Hà Đông', address: '78 Lê Lợi, Hà Đông, Hà Nội', lat: 20.9708, lng: 105.7798, specialties: 'Nội khoa' },
+    { id: 'C025', name: 'Phòng khám Đa khoa Hà Đông 4', address: '34 Nguyễn Quý Đức, Hà Đông, Hà Nội', lat: 20.9712, lng: 105.7768, specialties: 'Đa khoa,Ngoại khoa' },
+
+    // === QUẬN THANH XUÂN (5 cơ sở) ===
+    { id: 'C026', name: 'Bệnh viện Đa khoa Thanh Xuân', address: '128 Nguyễn Trãi, Thanh Xuân, Hà Nội', lat: 20.9980, lng: 105.8020, specialties: 'Đa khoa,Nội khoa,Ngoại khoa,Sản nhi' },
+    { id: 'C027', name: 'Phòng khám Đa khoa Quốc tế Thanh Xuân', address: '56 Lê Văn Lương, Thanh Xuân, Hà Nội', lat: 20.9950, lng: 105.8050, specialties: 'Tim mạch,Nội tiết,Da liễu' },
+    { id: 'C028', name: 'Phòng khám Chuyên khoa Mắt Thanh Xuân', address: '23 Nguyễn Trãi, Thanh Xuân, Hà Nội', lat: 20.9960, lng: 105.8030, specialties: 'Nhãn khoa' },
+    { id: 'C029', name: 'Phòng khám Răng Hàm Mặt Thanh Xuân', address: '45 Khuất Duy Tiến, Thanh Xuân, Hà Nội', lat: 20.9940, lng: 105.8060, specialties: 'Răng hàm mặt' },
+    { id: 'C030', name: 'Bệnh viện Vận động 3', address: '67 Nguyễn Trãi, Thanh Xuân, Hà Nội', lat: 20.9970, lng: 105.8040, specialties: 'Chấn thương chỉnh hình,Phục hồi chức năng' },
+
+    // === QUẬN HOÀNG MAI (4 cơ sở) ===
+    { id: 'C031', name: 'Bệnh viện Đa khoa Hoàng Mai', address: '34 Nguyễn Hữu Thọ, Hoàng Mai, Hà Nội', lat: 20.9850, lng: 105.8400, specialties: 'Đa khoa,Nội khoa,Ngoại khoa' },
+    { id: 'C032', name: 'Phòng khám Đa khoa Hoàng Mai', address: '56 Linh Đường, Hoàng Mai, Hà Nội', lat: 20.9820, lng: 105.8420, specialties: 'Nội khoa,Nhi khoa,Tai mũi họng' },
+    { id: 'C033', name: 'Phòng khám Chuyên khoa Cơ xương khớp Hoàng Mai', address: '78 Giáp Bát, Hoàng Mai, Hà Nội', lat: 20.9880, lng: 105.8450, specialties: 'Cơ xương khớp' },
+    { id: 'C034', name: 'Phòng khám Mắt Hoàng Mai', address: '23 Tân Mai, Hoàng Mai, Hà Nội', lat: 20.9840, lng: 105.8440, specialties: 'Nhãn khoa' },
+
+    // === QUẬN NAM TỪ LIÊM (4 cơ sở) ===
+    { id: 'C035', name: 'Bệnh viện Đa khoa Nam Từ Liêm', address: '56 Trần Hữu Dực, Nam Từ Liêm, Hà Nội', lat: 21.0120, lng: 105.7800, specialties: 'Đa khoa,Nội khoa,Ngoại khoa' },
+    { id: 'C036', name: 'Phòng khám Đa khoa Quốc tế Nam Từ Liêm', address: '78 Lê Đức Thọ, Nam Từ Liêm, Hà Nội', lat: 21.0150, lng: 105.7820, specialties: 'Tim mạch,Nội tiết,Da liễu' },
+    { id: 'C037', name: 'Phòng khám Chuyên khoa Tai Mũi Họng Mỹ Đình', address: '34 Phạm Hùng, Nam Từ Liêm, Hà Nội', lat: 21.0180, lng: 105.7850, specialties: 'Tai mũi họng' },
+    { id: 'C038', name: 'Phòng khám Răng Hàm Mặt Mỹ Đình', address: '56 Nguyễn Cơ Thạch, Nam Từ Liêm, Hà Nội', lat: 21.0160, lng: 105.7880, specialties: 'Răng hàm mặt' },
+
+    // === QUẬN ĐỐNG ĐA (4 cơ sở) ===
+    { id: 'C039', name: 'Bệnh viện Bạch Mai', address: '78 Giải Phóng, Đống Đa, Hà Nội', lat: 21.0019, lng: 105.8412, specialties: 'Tim mạch,Nội tiết,Thần kinh,Hô hấp,Tiêu hóa,Da liễu' },
+    { id: 'C040', name: 'Bệnh viện Nhi Trung Ương', address: '18/879 La Thành, Đống Đa, Hà Nội', lat: 21.0228, lng: 105.8358, specialties: 'Nhi khoa,Nhi tim mạch,Nhi thần kinh' },
+    { id: 'C041', name: 'Phòng khám Đa khoa Đống Đa', address: '23 Nguyễn Lương Bằng, Đống Đa, Hà Nội', lat: 21.0180, lng: 105.8380, specialties: 'Nội khoa,Ngoại khoa,Sản khoa,Nhi khoa' },
+    { id: 'C042', name: 'Phòng khám Vật lý trị liệu Phục hồi chức năng', address: '88 Hoàng Cầu, Đống Đa, Hà Nội', lat: 21.0150, lng: 105.8380, specialties: 'Phục hồi chức năng,Cơ xương khớp' },
+
+    // === QUẬN BA ĐÌNH (3 cơ sở) ===
+    { id: 'C043', name: 'Bệnh viện Việt Đức', address: '40 Tràng Thi, Ba Đình, Hà Nội', lat: 21.0285, lng: 105.8456, specialties: 'Ngoại khoa,Chấn thương chỉnh hình,Thần kinh,Tiết niệu' },
+    { id: 'C044', name: 'Bệnh viện Đa khoa Medlatec', address: '42 Nghĩa Dũng, Ba Đình, Hà Nội', lat: 21.0450, lng: 105.8365, specialties: 'Nội tổng hợp,Xét nghiệm,Da liễu,Sản phụ khoa,Nhi khoa' },
+    { id: 'C045', name: 'Bệnh viện Hồng Ngọc', address: '55 Yên Ninh, Ba Đình, Hà Nội', lat: 21.0388, lng: 105.8440, specialties: 'Tim mạch,Nội tiết,Cơ xương khớp,Tiêu hóa,Ung bướu' },
+
+    // === QUẬN HOÀN KIẾM (3 cơ sở) ===
+    { id: 'C046', name: 'Bệnh viện Mắt Trung Ương', address: '85 Bà Triệu, Hoàn Kiếm, Hà Nội', lat: 21.0255, lng: 105.8484, specialties: 'Nhãn khoa,Phẫu thuật mắt' },
+    { id: 'C047', name: 'Bệnh viện Phụ sản Hà Nội', address: '9 Nguyễn Thái Học, Hoàn Kiếm, Hà Nội', lat: 21.0275, lng: 105.8550, specialties: 'Sản phụ khoa,Hiếm muộn' },
+    { id: 'C048', name: 'Phòng khám Đông Y Hà Nội', address: '36 Lý Thường Kiệt, Hoàn Kiếm, Hà Nội', lat: 21.0260, lng: 105.8500, specialties: 'Đông y,Vật lý trị liệu' },
+
+    // === QUẬN HAI BÀ TRƯNG (2 cơ sở) ===
+    { id: 'C049', name: 'Bệnh viện Đa khoa Quốc tế Vinmec Times City', address: '458 Minh Khai, Hai Bà Trưng, Hà Nội', lat: 21.0050, lng: 105.8680, specialties: 'Đa khoa,Nội tiết,Tim mạch,Nhi khoa,Sản khoa' },
+    { id: 'C050', name: 'Bệnh viện E Hà Nội', address: '89 Trần Cung, Bắc Từ Liêm, Hà Nội', lat: 21.0580, lng: 105.8200, specialties: 'Nội khoa,Ngoại khoa,Tim mạch,Hô hấp' },
+];
+
+// ============================================================
+//  TẠO 300 BÁC SĨ TỰ ĐỘNG
+// ============================================================
+function generateAllDoctors() {
+    const allDoctors = [];
+    const firstNames = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Vũ', 'Đặng', 'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương', 'Lý', 'Trương', 'Phan', 'Vương', 'Lưu', 'Tô', 'Trịnh', 'Thái', 'Lâm', 'Phùng', 'Mai', 'Tiêu'];
+    const lastNamesMale = ['Anh', 'Đức', 'Hùng', 'Minh', 'Nam', 'Quân', 'Sơn', 'Thắng', 'Tú', 'Việt', 'Bình', 'Cường', 'Dũng', 'Hải', 'Long', 'Phúc', 'Quang', 'Tài', 'Vinh', 'Thịnh', 'Khoa', 'Khôi', 'Bảo', 'Gia', 'Nhật', 'Trí', 'Đạt', 'Phát'];
+    const lastNamesFemale = ['Hoa', 'Lan', 'Phương', 'Hà', 'Huyền', 'Hương', 'Khánh', 'Linh', 'Mai', 'Ngọc', 'Tâm', 'Thảo', 'Trang', 'Yến', 'Anh', 'Quỳnh', 'Chi', 'Dung', 'Huệ', 'Nhi', 'Thy', 'Vy', 'Diễm', 'Kiều', 'Thúy', 'Trúc', 'Uyên', 'Vân'];
+    
+    const symptomList = [
+        'sốt', 'mệt mỏi', 'đau đầu', 'ho', 'khó thở', 'đau ngực', 'đau bụng', 'buồn nôn',
+        'tiêu chảy', 'táo bón', 'chán ăn', 'mất ngủ', 'chóng mặt', 'đau khớp', 'đau lưng',
+        'ngứa', 'nổi mẩn', 'sổ mũi', 'nghẹt mũi', 'đau họng', 'khàn tiếng', 'mờ mắt',
+        'đau mắt', 'chảy nước mắt', 'khô mắt', 'đau tai', 'ù tai', 'chảy dịch tai',
+        'huyết áp cao', 'tim đập nhanh', 'phù chân', 'tê tay', 'tê chân', 'co giật',
+        'khát nước', 'tiểu nhiều', 'sụt cân', 'tăng cân', 'rụng tóc', 'da khô',
+        'stress', 'lo âu', 'trầm cảm', 'mất tập trung', 'hay quên',
+        'viêm họng', 'đau răng', 'khó nuốt', 'đau bụng kinh', 'ra khí hư',
+        'mang thai', 'khám thai', 'sinh con', 'tiêm chủng', 'dị ứng'
+    ];
+
+    let idCounter = 1;
+    const clinicIds = clinics.map(c => c.id);
+    
+    // Đảm bảo mỗi phòng khám có ít nhất 6 bác sĩ (2 bác sĩ/chuyên khoa * 3 chuyên khoa)
+    const minDoctorsPerClinic = 6;
+    
+    for (let clinicIdx = 0; clinicIdx < clinics.length; clinicIdx++) {
+        const clinicId = clinicIds[clinicIdx];
+        const clinic = clinics[clinicIdx];
+        const clinicSpecialties = clinic.specialties.split(',').map(s => s.trim());
+        
+        // Tính số bác sĩ cần cho phòng khám này
+        let numDoctors = Math.max(minDoctorsPerClinic, Math.floor(300 / clinics.length));
+        
+        // Phân bổ thêm cho các phòng khám đầu tiên
+        if (clinicIdx < 300 % clinics.length) {
+            numDoctors++;
+        }
+        
+        // Phân bổ bác sĩ cho từng chuyên khoa
+        const doctorsPerSpecialty = {};
+        clinicSpecialties.forEach(spec => {
+            doctorsPerSpecialty[spec] = Math.max(2, Math.floor(numDoctors / clinicSpecialties.length));
+        });
+        
+        // Phân bổ số dư
+        let remaining = numDoctors - Object.values(doctorsPerSpecialty).reduce((a, b) => a + b, 0);
+        let specKeys = Object.keys(doctorsPerSpecialty);
+        let specIndex = 0;
+        while (remaining > 0) {
+            const spec = specKeys[specIndex % specKeys.length];
+            doctorsPerSpecialty[spec]++;
+            remaining--;
+            specIndex++;
+        }
+        
+        // Tạo bác sĩ cho từng chuyên khoa
+        for (const [specialty, count] of Object.entries(doctorsPerSpecialty)) {
+            for (let i = 0; i < count && idCounter <= 300; i++) {
+                const isMale = Math.random() > 0.5;
+                const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+                const lastName = isMale ? 
+                    lastNamesMale[Math.floor(Math.random() * lastNamesMale.length)] : 
+                    lastNamesFemale[Math.floor(Math.random() * lastNamesFemale.length)];
+                const name = `BS. ${firstName} ${lastName}`;
+                
+                const numSymptoms = Math.floor(Math.random() * 3) + 3;
+                const selectedSymptoms = [];
+                const shuffled = [...symptomList].sort(() => Math.random() - 0.5);
+                for (let j = 0; j < numSymptoms; j++) {
+                    selectedSymptoms.push(shuffled[j % shuffled.length]);
+                }
+                
+                allDoctors.push({
+                    id: `D${String(idCounter).padStart(3, '0')}`,
+                    name: name,
+                    specialty: specialty,
+                    clinic_id: clinicId,
+                    experience: Math.floor(Math.random() * 30) + 5,
+                    rating: +(4 + Math.random() * 1).toFixed(1),
+                    symptoms: selectedSymptoms.join(',')
+                });
+                
+                idCounter++;
+            }
+        }
+    }
+    
+    // Nếu chưa đủ 300, thêm bác sĩ vào các phòng khám có ít bác sĩ nhất
+    while (idCounter <= 300) {
+        // Tìm phòng khám có ít bác sĩ nhất
+        const clinicCounts = {};
+        allDoctors.forEach(d => {
+            clinicCounts[d.clinic_id] = (clinicCounts[d.clinic_id] || 0) + 1;
+        });
+        
+        let minClinic = null;
+        let minCount = Infinity;
+        for (const cid of clinicIds) {
+            const count = clinicCounts[cid] || 0;
+            if (count < minCount) {
+                minCount = count;
+                minClinic = cid;
+            }
+        }
+        
+        if (!minClinic) break;
+        
+        const clinic = clinics.find(c => c.id === minClinic);
+        const clinicSpecialties = clinic.specialties.split(',').map(s => s.trim());
+        const specialty = clinicSpecialties[Math.floor(Math.random() * clinicSpecialties.length)];
+        
+        const isMale = Math.random() > 0.5;
+        const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const lastName = isMale ? 
+            lastNamesMale[Math.floor(Math.random() * lastNamesMale.length)] : 
+            lastNamesFemale[Math.floor(Math.random() * lastNamesFemale.length)];
+        const name = `BS. ${firstName} ${lastName}`;
+        
+        const numSymptoms = Math.floor(Math.random() * 3) + 3;
+        const selectedSymptoms = [];
+        const shuffled = [...symptomList].sort(() => Math.random() - 0.5);
+        for (let j = 0; j < numSymptoms; j++) {
+            selectedSymptoms.push(shuffled[j % shuffled.length]);
+        }
+        
+        allDoctors.push({
+            id: `D${String(idCounter).padStart(3, '0')}`,
+            name: name,
+            specialty: specialty,
+            clinic_id: minClinic,
+            experience: Math.floor(Math.random() * 30) + 5,
+            rating: +(4 + Math.random() * 1).toFixed(1),
+            symptoms: selectedSymptoms.join(',')
+        });
+        
+        idCounter++;
+    }
+    
+    return allDoctors;
+}
+
+// Tạo 300 bác sĩ
+let doctors = generateAllDoctors();
+
+// ============================================================
+//  KIỂM TRA DỮ LIỆU
+// ============================================================
+console.log(`✅ Đã tạo ${clinics.length} phòng khám`);
+console.log(`✅ Đã tạo ${doctors.length} bác sĩ`);
+
+// Kiểm tra phân bố bác sĩ theo phòng khám
+const distribution = {};
+doctors.forEach(d => {
+    distribution[d.clinic_id] = (distribution[d.clinic_id] || 0) + 1;
+});
+console.log('📊 Phân bố bác sĩ theo phòng khám:');
+Object.entries(distribution).forEach(([cid, count]) => {
+    const clinic = clinics.find(c => c.id === cid);
+    console.log(`   ${clinic?.name || cid}: ${count} bác sĩ`);
+});
+
+// Kiểm tra mỗi chuyên khoa có ít nhất 2 bác sĩ
+const specCheck = {};
+doctors.forEach(d => {
+    const key = `${d.clinic_id}-${d.specialty}`;
+    specCheck[key] = (specCheck[key] || 0) + 1;
+});
+
+const lowSpecs = Object.entries(specCheck).filter(([key, count]) => count < 2);
+if (lowSpecs.length > 0) {
+    console.warn('⚠️ Các chuyên khoa sau có ít hơn 2 bác sĩ:');
+    lowSpecs.forEach(([key, count]) => {
+        const [clinicId, specialty] = key.split('-');
+        const clinic = clinics.find(c => c.id === clinicId);
+        console.log(`   ${clinic?.name || clinicId} - ${specialty}: ${count} bác sĩ`);
+    });
+} else {
+    console.log('✅ Tất cả chuyên khoa đều có ít nhất 2 bác sĩ');
+}
+
+// ============================================================
+//  CẬP NHẬT UI
+// ============================================================
+// Đảm bảo số lượng hiển thị đúng
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        updateCounts();
+        console.log('🔄 Đã cập nhật giao diện');
+    }, 100);
+});
+
+        // ============================================================
+        //  APPOINTMENTS
+        // ============================================================
+        let appointments = [
+            { id: 'A001', patient_name: 'Lê Thị Phương', doctor_id: 'D001', clinic_id: 'C001', date: '2026-06-27',
+                time: '08:30', status: 'confirmed' },
+            { id: 'A002', patient_name: 'Ngô Văn Thắng', doctor_id: 'D003', clinic_id: 'C005', date: '2026-06-27',
+                time: '09:00', status: 'confirmed' },
+            { id: 'A003', patient_name: 'Trần Thị Lan', doctor_id: 'D006', clinic_id: 'C002', date: '2026-06-28',
+                time: '10:00', status: 'confirmed' },
+            { id: 'A004', patient_name: 'Phạm Văn An', doctor_id: 'D009', clinic_id: 'C004', date: '2026-06-29',
+                time: '14:00', status: 'pending' },
+            { id: 'A005', patient_name: 'Hoàng Thị Mai', doctor_id: 'D011', clinic_id: 'C001', date: '2026-06-28',
+                time: '08:00', status: 'confirmed' },
+        ];
+
+        const ALL_SLOTS = ['07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '13:30', '14:00', '14:30',
+            '15:00', '15:30', '16:00', '16:30'
+        ];
+
+        // ============================================================
+        //  STATE
+        // ============================================================
+        let state = { step: 1, clinic: null, doctor: null, specialty: null, date: null, time: null, reminders: ['1h', '1d'],
+            userLatLng: null };
+        let map, userMarker, routingControl, clinicMarkersMap = {};
+        let adminMap, adminMarkersMap = {};
+        let pickerMap, pickerMarker;
+        let editTarget = { type: null, id: null };
+        let deleteTarget = { type: null, id: null };
+        let geocodeTimer = null;
+        let adminAuthenticated = false;
+        const ADMIN_CREDS = [{ user: 'admin', pass: 'medbook2024' }, { user: 'quantri', pass: 'admin123' }];
+
+        // ============================================================
+        //  HELPERS
+        // ============================================================
+        function haversine([la1, lo1], [la2, lo2]) {
+            const R = 6371,
+                dLa = (la2 - la1) * Math.PI / 180,
+                dLo = (lo2 - lo1) * Math.PI / 180;
+            const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * Math.PI / 180) * Math.cos(la2 * Math.PI / 180) * Math.sin(dLo /
+                2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function getSpecialties() { return [...new Set(doctors.map(d => d.specialty))].sort(); }
+
+        function countClinicsBySpecialty(spec) {
+            if (!spec) return clinics.length;
+            return clinics.filter(c => c.specialties.split(',').some(s => s.trim() === spec)).length;
+        }
+
+        // ============================================================
+        //  PAGE SWITCH
+        // ============================================================
+        function switchPage(p) {
+            if (p === 'admin' && !adminAuthenticated) { showAdminLogin(); return; }
+            document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.nav-links button').forEach(x => x.classList.remove('active'));
+            document.getElementById('page-' + p).classList.add('active');
+            const btns = document.querySelectorAll('.nav-links button');
+            if (p === 'patient') btns[0].classList.add('active');
+            else if (p === 'admin') btns[1].classList.add('active');
+            if (p === 'admin') { refreshAdminStats();
+                renderApptTable();
+                renderDocTable();
+                renderCliTable();
+                setTimeout(initAdminMap, 200); }
+            if (p === 'patient' && map) setTimeout(() => map.invalidateSize(), 200);
+        }
+
+        function showAdminLogin() {
+            const overlay = document.getElementById('adminLogin');
+            overlay.classList.add('show');
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+            document.getElementById('loginErr').classList.remove('show');
+            setTimeout(() => document.getElementById('loginUser').focus(), 100);
+        }
+
+        function doLogin() {
+            const u = document.getElementById('loginUser').value.trim();
+            const p = document.getElementById('loginPass').value;
+            const ok = ADMIN_CREDS.some(c => c.user === u && c.pass === p);
+            if (ok) {
+                adminAuthenticated = true;
+                document.getElementById('adminLogin').classList.remove('show');
+                document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+                document.querySelectorAll('.nav-links button').forEach(x => x.classList.remove('active'));
+                document.getElementById('page-admin').classList.add('active');
+                document.querySelectorAll('.nav-links button')[1].classList.add('active');
+                refreshAdminStats();
+                renderApptTable();
+                renderDocTable();
+                renderCliTable();
+                setTimeout(initAdminMap, 200);
+            } else {
+                document.getElementById('loginErr').classList.add('show');
+                document.getElementById('loginPass').value = '';
+                document.getElementById('loginPass').focus();
+            }
+        }
+
+        function adminLogout() {
+            adminAuthenticated = false;
+            document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.nav-links button').forEach(x => x.classList.remove('active'));
+            document.getElementById('page-patient').classList.add('active');
+            document.querySelectorAll('.nav-links button')[0].classList.add('active');
+        }
+
+        // ============================================================
+        //  MAP
+        // ============================================================
+        function initMap() {
+            if (map) return;
+            map = L.map('map').setView([21.028, 105.852], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+            clinics.forEach(c => addClinicMarker(c));
+            renderClinicList();
+        }
+
+        function addClinicMarker(c) {
+            const icon = L.divIcon({
+                html: `<div style="background:var(--primary);color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 2px 10px rgba(0,0,0,0.2);border:2px solid #fff;cursor:pointer">🏥</div>`,
+                className: '',
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            });
+            const m = L.marker([parseFloat(c.lat), parseFloat(c.lng)], { icon }).addTo(map);
+            m.bindPopup(
+                `<b>${c.name}</b><br><span style="font-size:0.8rem;color:#666">${c.address}</span><br><button onclick="selectClinic('${c.id}')" style="margin-top:6px;background:var(--primary);color:#fff;border:none;border-radius:40px;padding:4px 14px;cursor:pointer;font-size:0.78rem;font-weight:600">✅ Chọn phòng khám này</button>`
+                );
+            m.on('click', () => m.openPopup());
+            clinicMarkersMap[c.id] = m;
+        }
+
+        // ============================================================
+        //  GPS
+        // ============================================================
+        function getGPS() {
+            if (!navigator.geolocation) { alert('Trình duyệt không hỗ trợ GPS.'); return; }
+            const btn = document.getElementById('gpsBtn');
+            const st = document.getElementById('gpsStatus');
+            btn.disabled = true;
+            st.className = 'gps-status gps-wait';
+            st.textContent = '⏳ Đang lấy vị trí...';
+            if (!map) initMap();
+            navigator.geolocation.getCurrentPosition(pos => {
+                const lat = pos.coords.latitude,
+                    lng = pos.coords.longitude;
+                state.userLatLng = [lat, lng];
+                st.className = 'gps-status gps-ok';
+                st.textContent = `✅ GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                btn.disabled = false;
+                if (userMarker) userMarker.setLatLng([lat, lng]);
+                else {
+                    userMarker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            html: `<div style="background:#F59E0B;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 2px 10px rgba(0,0,0,0.25);border:2px solid #fff">📍</div>`,
+                            className: '',
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 16]
+                        })
+                    }).addTo(map).bindPopup('📍 Vị trí của bạn').openPopup();
+                }
+                map.setView([lat, lng], 14);
+                renderClinicList();
+                if (state.clinic) drawRoute([lat, lng], [parseFloat(state.clinic.lat), parseFloat(state.clinic.lng)]);
+            }, err => {
+                st.className = 'gps-status gps-err';
+                st.textContent = '❌ Không lấy được GPS – dùng vị trí Hà Nội';
+                btn.disabled = false;
+                state.userLatLng = [21.028, 105.852];
+                if (!userMarker) {
+                    userMarker = L.marker([21.028, 105.852], {
+                        icon: L.divIcon({
+                            html: `<div style="background:#F59E0B;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 2px 10px rgba(0,0,0,0.25);border:2px solid #fff">📍</div>`,
+                            className: '',
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 16]
+                        })
+                    }).addTo(map).bindPopup('📍 Vị trí giả lập (Trung tâm Hà Nội)');
+                }
+                renderClinicList();
+            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+        }
+
+        function drawRoute(from, to) {
+            if (routingControl) map.removeControl(routingControl);
+            routingControl = L.Routing.control({
+                waypoints: [L.latLng(from[0], from[1]), L.latLng(to[0], to[1])],
+                routeWhileDragging: false,
+                show: false,
+                lineOptions: { styles: [{ color: '#14B8A6', weight: 4, opacity: 0.8 }] },
+                createMarker: () => null,
+                router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' })
+            }).addTo(map);
+            routingControl.on('routesfound', e => {
+                const dist = (e.routes[0].summary.totalDistance / 1000).toFixed(1);
+                const time = Math.round(e.routes[0].summary.totalTime / 60);
+                document.getElementById('s-dist').textContent = `${dist} km (${time} phút)`;
+            });
+        }
+
+        // ============================================================
+        //  CLINIC LIST
+        // ============================================================
+        function renderClinicList() {
+            const list = document.getElementById('clinicList');
+            const ref = state.userLatLng || [21.028, 105.852];
+            const filterInfo = document.getElementById('clinicFilterMessage');
+            const countBadge = document.getElementById('clinicCountBadge');
+
+            let filteredClinics = [...clinics];
+            let filterMsg = '';
+
+            if (state.specialty) {
+                filteredClinics = filteredClinics.filter(c =>
+                    c.specialties.split(',').some(s => s.trim() === state.specialty)
+                );
+                const total = countClinicsBySpecialty(state.specialty);
+                filterMsg = `🏥 Đang hiển thị <strong>${filteredClinics.length}</strong> phòng khám phù hợp với chuyên khoa <strong>${state.specialty}</strong> (tổng ${total})`;
+            } else {
+                filterMsg = `🏥 Hiển thị tất cả <strong>${filteredClinics.length}</strong> phòng khám`;
+            }
+
+            if (filterInfo) filterInfo.innerHTML = filterMsg;
+            if (countBadge) {
+                countBadge.textContent = filteredClinics.length > 0 ?
+                    `${filteredClinics.length} phòng khám` :
+                    'không có phòng khám phù hợp';
+            }
+
+            if (filteredClinics.length === 0) {
+                list.innerHTML = `<div class="empty-state">
+                    😔 Không có phòng khám nào phù hợp với chuyên khoa <strong>${state.specialty}</strong>.
+                    <br>Vui lòng quay lại <button class="btn btn-outline btn-sm" onclick="gotoStep(1)" style="margin-top:8px;">Chọn chuyên khoa khác</button>
+                </div>`;
+                document.getElementById('btnS3').disabled = true;
+                return;
+            }
+
+            const sorted = filteredClinics.sort((a, b) =>
+                haversine(ref, [parseFloat(a.lat), parseFloat(a.lng)]) -
+                haversine(ref, [parseFloat(b.lat), parseFloat(b.lng)])
+            );
+
+            list.innerHTML = sorted.map((c, i) => {
+                const dist = haversine(ref, [parseFloat(c.lat), parseFloat(c.lng)]);
+                const sel = state.clinic && state.clinic.id === c.id;
+                const matchedSpec = state.specialty ?
+                    c.specialties.split(',').filter(s => s.trim() === state.specialty)[0] : null;
+
+                return `<div class="clinic-item ${sel?'selected':''}" onclick="selectClinic('${c.id}')">
+                    <div>
+                        <div class="clinic-name">${c.name} ${i===0?'<span style="font-size:0.7rem;color:var(--primary);font-weight:700">⭐ Gần nhất</span>':''}</div>
+                        <div class="clinic-addr">📍 ${c.address}</div>
+                        <div class="clinic-addr" style="color:var(--primary);margin-top:2px;">
+                            🔬 ${c.specialties.split(',').slice(0,3).join(', ')}${c.specialties.split(',').length>3?'...':''}
+                            ${matchedSpec ? `<span style="background:var(--primary-light);padding:0 8px;border-radius:12px;font-weight:700;margin-left:6px;color:var(--primary);">✅ ${matchedSpec}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="clinic-dist">${dist.toFixed(1)} km</div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('btnS3').disabled = false;
+
+            Object.entries(clinicMarkersMap).forEach(([cid, m]) => {
+                const isVisible = filteredClinics.some(c => c.id === cid);
+                if (isVisible) {
+                    m.addTo(map);
+                } else {
+                    map.removeLayer(m);
+                }
+            });
+            filteredClinics.forEach(c => {
+                if (!clinicMarkersMap[c.id]) {
+                    addClinicMarker(c);
+                } else if (!map.hasLayer(clinicMarkersMap[c.id])) {
+                    clinicMarkersMap[c.id].addTo(map);
+                }
+            });
+        }
+
+        function selectClinic(id) {
+            state.clinic = clinics.find(c => c.id === id);
+            if (!state.clinic) return;
+            renderClinicList();
+            document.getElementById('btnS3').disabled = false;
+            document.getElementById('s-clinic').textContent = state.clinic.name;
+            const ref = state.userLatLng || [21.028, 105.852];
+            const dist = haversine(ref, [parseFloat(state.clinic.lat), parseFloat(state.clinic.lng)]).toFixed(1);
+            document.getElementById('s-dist').textContent = dist + ' km';
+
+            Object.entries(clinicMarkersMap).forEach(([cid, m]) => {
+                if (!map.hasLayer(m)) return;
+                m.setIcon(L.divIcon({
+                    html: `<div style="background:${cid===id?'#14B8A6':'#1A3A5C'};color:#fff;border-radius:50%;width:${cid===id?40:34}px;height:${cid===id?40:34}px;display:flex;align-items:center;justify-content:center;font-size:${cid===id?1.2:1}rem;box-shadow:0 2px 10px rgba(0,0,0,0.2);border:2px solid #fff">🏥</div>`,
+                    className: '',
+                    iconSize: [cid === id ? 40 : 34, cid === id ? 40 : 34],
+                    iconAnchor: [cid === id ? 20 : 17, cid === id ? 20 : 17]
+                }));
+            });
+            map.setView([parseFloat(state.clinic.lat), parseFloat(state.clinic.lng)], 15);
+            if (state.userLatLng) drawRoute(state.userLatLng, [parseFloat(state.clinic.lat), parseFloat(state.clinic
+                .lng)]);
+        }
+
+        // ============================================================
+        //  SYMPTOMS & SPECIALTIES
+        // ============================================================
+        const SYMPTOM_DICT = {
+            'Thần kinh': ['đau đầu', 'nhức đầu', 'đau nửa đầu', 'migraine', 'chóng mặt', 'hoa mắt', 'choáng váng', 'tê tay',
+                'tê chân', 'tê liệt', 'co giật', 'động kinh', 'mất ngủ', 'khó ngủ'
+            ],
+            'Tim mạch': ['đau ngực', 'tức ngực', 'khó thở', 'hụt hơi', 'tim đập nhanh', 'loạn nhịp', 'đánh trống ngực',
+                'huyết áp cao', 'huyết áp thấp', 'phù chân', 'phù tay', 'nhồi máu', 'suy tim', 'tím tái', 'ngất xỉu'
+            ],
+            'Hô hấp': ['ho', 'ho khan', 'ho có đờm', 'ho ra máu', 'khó thở', 'thở khò khè', 'hen suyễn', 'viêm phổi',
+                'viêm phế quản', 'tức ngực', 'đau ngực khi thở', 'sổ mũi', 'nghẹt mũi'
+            ],
+            'Tiêu hóa': ['đau dạ dày', 'đau bụng', 'đau bụng trên', 'đau thượng vị', 'ợ chua', 'ợ hơi', 'buồn nôn', 'nôn',
+                'nôn mửa', 'tiêu chảy', 'táo bón', 'phân lỏng', 'đi ngoài', 'xuất huyết tiêu hóa', 'viêm đại tràng',
+                'đau quặn bụng', 'chướng bụng', 'đầy hơi', 'gan nhiễm mỡ', 'vàng da'
+            ],
+            'Nội tiết': ['tiểu đường', 'đường huyết cao', 'khát nước nhiều', 'tiểu nhiều', 'béo phì', 'thừa cân',
+                'tuyến giáp', 'bướu cổ', 'sụt cân', 'tăng cân', 'rụng tóc', 'da khô', 'mệt mỏi kéo dài'
+            ],
+            'Cơ xương khớp': ['đau lưng', 'đau cột sống', 'đau cổ', 'đau vai', 'đau khớp gối', 'đau khớp', 'viêm khớp',
+                'thoái hóa khớp', 'loãng xương', 'gout', 'tê bì', 'cứng khớp', 'đau nhức xương', 'vẹo cột sống'
+            ],
+            'Da liễu': ['mụn', 'mụn trứng cá', 'nổi mẩn', 'phát ban', 'ngứa', 'viêm da', 'dị ứng da', 'nổi mề đay',
+                'chàm', 'vẩy nến', 'rụng tóc', 'hói đầu', 'nấm da', 'hắc lào', 'ghẻ', 'mụn nhọt', 'bong tróc da'
+            ],
+            'Tai mũi họng': ['đau họng', 'viêm họng', 'viêm amidan', 'sưng họng', 'khàn tiếng', 'mất tiếng', 'ù tai',
+                'điếc tai', 'chảy dịch tai', 'đau tai', 'viêm xoang', 'nghẹt mũi', 'chảy máu cam', 'khó nuốt'
+            ],
+            'Nhãn khoa': ['đau mắt', 'mờ mắt', 'nhìn mờ', 'cận thị', 'loạn thị', 'đỏ mắt', 'chảy nước mắt', 'ngứa mắt',
+                'khô mắt', 'đục thủy tinh thể', 'glaucoma', 'tăng nhãn áp', 'nhìn đôi', 'mù màu'
+            ],
+            'Sản phụ khoa': ['đau bụng kinh', 'kinh nguyệt', 'rối loạn kinh nguyệt', 'ra khí hư', 'ngứa vùng kín',
+                'đau vùng kín', 'mang thai', 'thai kỳ', 'u xơ tử cung', 'u nang buồng trứng', 'viêm phụ khoa',
+                'vô sinh', 'tiền mãn kinh', 'mãn kinh'
+            ],
+            'Nhi khoa': ['trẻ sốt', 'bé sốt', 'sốt cao trẻ em', 'trẻ ho', 'bé ho', 'trẻ tiêu chảy', 'bé không chịu ăn',
+                'trẻ biếng ăn', 'còi xương', 'suy dinh dưỡng', 'trẻ nôn', 'bé khóc nhiều', 'dị ứng trẻ em'
+            ],
+            'Ngoại khoa': ['đau bụng cấp', 'ruột thừa', 'thoát vị', 'u nang', 'sỏi mật', 'viêm túi mật', 'đau hố chậu phải',
+                'cần phẫu thuật'
+            ],
+            'Chấn thương chỉnh hình': ['gãy xương', 'bong gân', 'trật khớp', 'chấn thương thể thao', 'đau sau tai nạn',
+                'đứt gân', 'tụ máu'
+            ],
+            'Đa khoa': ['khám tổng quát', 'sốt', 'mệt mỏi', 'chán ăn', 'xét nghiệm', 'kiểm tra sức khỏe'],
+        };
+
+        function matchSymptoms() {
+            const text = document.getElementById('symptoms').value.toLowerCase().normalize('NFC');
+            const infoEl = document.getElementById('symMatchInfo');
+            if (!text.trim()) { infoEl.textContent = ''; return; }
+
+            const scores = {};
+            for (const [spec, keywords] of Object.entries(SYMPTOM_DICT)) {
+                for (const kw of keywords) {
+                    if (text.includes(kw)) {
+                        scores[spec] = (scores[spec] || 0) + kw.split(' ').length;
+                    }
+                }
+            }
+            doctors.forEach(d => {
+                const syms = d.symptoms.toLowerCase().split(',');
+                syms.forEach(s => {
+                    if (text.includes(s.trim()) && s.trim().length > 1) {
+                        scores[d.specialty] = (scores[d.specialty] || 0) + 1;
+                    }
+                });
+            });
+
+            if (!Object.keys(scores).length) {
+                infoEl.textContent = '💡 Không nhận diện được triệu chứng. Vui lòng chọn chuyên khoa thủ công.';
+                return;
+            }
+
+            const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+            const best = sorted[0][0];
+            const second = sorted[1] ? sorted[1][0] : null;
+
+            const count = countClinicsBySpecialty(best);
+            let msg = `✅ Gợi ý chuyên khoa: <strong>${best}</strong> (có ${count} phòng khám)`;
+            if (second && sorted[1][1] >= sorted[0][1] * 0.6) {
+                const count2 = countClinicsBySpecialty(second);
+                msg += ` · hoặc <strong>${second}</strong> (${count2} phòng khám)`;
+            }
+            infoEl.innerHTML = msg;
+
+            selectSpec(null, best);
+            document.querySelectorAll('.spec-tag').forEach(t => t.classList.toggle('sel', t.textContent === best));
+        }
+
+        function initSpecTags() {
+            const specs = getSpecialties();
+            const qt = document.getElementById('specQuickTags');
+            if (qt) qt.innerHTML = specs.map(s =>
+                `<div class="spec-tag" onclick="selectSpec(this,'${s}')">${s}</div>`).join('');
+        }
+
+        function selectSpec(el, spec) {
+            state.specialty = spec;
+            document.querySelectorAll('.spec-tag').forEach(t => t.classList.toggle('sel', t.textContent === spec));
+            document.getElementById('s-spec').textContent = spec;
+
+            const count = countClinicsBySpecialty(spec);
+            const infoEl = document.getElementById('symMatchInfo');
+            if (count > 0 && infoEl && document.getElementById('step1').classList.contains('active')) {
+                infoEl.innerHTML = `🏥 Có <strong>${count}</strong> phòng khám phù hợp với chuyên khoa <strong>${spec}</strong>`;
+            }
+
+            if (document.getElementById('step3').classList.contains('active')) renderDoctors();
+
+            if (document.getElementById('step2').classList.contains('active')) {
+                renderClinicList();
+            }
+        }
+
+        function getClinicSpecialties() {
+            if (!state.clinic) return [];
+            return state.clinic.specialties.split(',').map(s => s.trim());
+        }
+
+        function renderSpecFilterForClinic() {
+            const el = document.getElementById('specFilterTags');
+            if (!el) return;
+            const cliSpecs = getClinicSpecialties();
+            const allSpecs = getSpecialties();
+            el.innerHTML = '';
+            if (state.clinic) {
+                el.insertAdjacentHTML('beforeend', `<div class="clinic-badge">🏥 ${state.clinic.name}</div>`);
+            }
+            allSpecs.forEach(s => {
+                const inClinic = cliSpecs.includes(s);
+                const sel = state.specialty === s;
+                if (inClinic) {
+                    el.insertAdjacentHTML('beforeend',
+                        `<div class="spec-tag${sel?' sel':''}" onclick="selectSpec(this,'${s}')">${s}</div>`);
+                }
+            });
+            if (!el.querySelector('.spec-tag')) {
+                el.insertAdjacentHTML('beforeend',
+                    '<span style="font-size:0.85rem;color:var(--gray-400);">Phòng khám chưa có chuyên khoa nào.</span>'
+                    );
+            }
+        }
+
+        // ============================================================
+        //  DOCTORS
+        // ============================================================
+        function renderDoctors() {
+            const grid = document.getElementById('doctorGrid');
+            if (!state.clinic) {
+                grid.innerHTML = '<div class="empty-state">⬅️ Vui lòng quay lại chọn phòng khám trước</div>';
+                return;
+            }
+            let filtered = doctors.filter(d => d.clinic_id === state.clinic.id);
+            if (state.specialty) {
+                const bySpec = filtered.filter(d => d.specialty === state.specialty);
+                if (bySpec.length > 0) filtered = bySpec;
+            }
+            if (!filtered.length) {
+                grid.innerHTML =
+                    `<div class="empty-state">😔 Không có bác sĩ ${state.specialty?'chuyên khoa <strong>'+state.specialty+'</strong> ':''}tại phòng khám này</div>`;
+                return;
+            }
+            filtered.sort((a, b) => {
+                if (state.specialty) {
+                    const aMatch = a.specialty === state.specialty ? 1 : 0;
+                    const bMatch = b.specialty === state.specialty ? 1 : 0;
+                    if (aMatch !== bMatch) return bMatch - aMatch;
+                }
+                return parseFloat(b.rating) - parseFloat(a.rating);
+            });
+            grid.innerHTML = filtered.map(d => {
+                const ini = d.name.split(' ').slice(-1)[0][0];
+                const sel = state.doctor && state.doctor.id === d.id;
+                const isMatch = state.specialty && d.specialty === state.specialty;
+                return `<div class="doctor-card ${sel?'selected':''}" onclick="selectDoctor('${d.id}')" style="${isMatch?'border-color:var(--primary)':''}">
+                    <div class="doc-av ${isMatch?'specialty-match':''}">${ini}</div>
+                    <div style="font-size:0.86rem;font-weight:700;">${d.name}</div>
+                    <div style="font-size:0.76rem;color:${isMatch?'var(--primary)':'var(--gray-500)'};font-weight:600;margin-top:2px;">🔬 ${d.specialty}</div>
+                    <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
+                        <span class="badge badge-green">⭐ ${d.rating}</span>
+                        <span class="badge badge-orange">${d.experience} năm</span>
+                        ${isMatch?'<span class="badge badge-green">✅ Khớp triệu chứng</span>':''}
+                    </div>
+                    <div style="font-size:0.72rem;color:var(--gray-400);margin-top:4px;">💊 ${d.symptoms.split(',').slice(0,3).join(', ')}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function selectDoctor(id) {
+            state.doctor = doctors.find(d => d.id === id);
+            renderDoctors();
+            document.getElementById('btnS4').disabled = false;
+            document.getElementById('s-doctor').textContent = state.doctor.name;
+        }
+
+        // ============================================================
+        //  SLOTS
+        // ============================================================
+        function loadTimeSlots() {
+            const date = document.getElementById('apptDate').value;
+            if (!date) return;
+
+            state.date = date;
+            state.time = null;
+
+            document.getElementById('s-date').textContent = new Date(date).toLocaleDateString('vi-VN', {
+                weekday: 'long',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+
+            const doctorId = state.doctor?.id || '';
+            const bookedSlots = appointments.filter(a =>
+                a.date === date &&
+                a.doctor_id === doctorId &&
+                a.status !== 'cancelled'
+            ).map(a => a.time);
+
+            const pendingSlots = appointments.filter(a =>
+                a.date === date &&
+                a.doctor_id === doctorId &&
+                a.status === 'pending'
+            ).map(a => a.time);
+
+            const allBooked = [...new Set([...bookedSlots, ...pendingSlots])];
+            const bookedDetails = appointments.filter(a =>
+                a.date === date &&
+                a.doctor_id === doctorId &&
+                a.status !== 'cancelled'
+            );
+
+            const banner = document.getElementById('conflictBanner');
+            if (allBooked.length > 0) {
+                banner.classList.add('show');
+                const bookedList = allBooked.join(', ');
+                document.getElementById('conflictMsg').innerHTML = `
+                    <strong>⚠️ Lưu ý:</strong> Bác sĩ <strong>${state.doctor?.name}</strong> đã có 
+                    <strong>${allBooked.length}</strong> lịch hẹn vào ngày này: 
+                    <span style="color:#DC2626;font-weight:600;">${bookedList}</span>. 
+                    Vui lòng chọn khung giờ khác.
+                `;
+            } else {
+                banner.classList.remove('show');
+            }
+
+            const slotContainer = document.getElementById('slotGrid');
+            if (ALL_SLOTS.length === 0) {
+                slotContainer.innerHTML = '<div class="empty-state">Không có khung giờ khám nào</div>';
+                return;
+            }
+
+            const availableSlots = ALL_SLOTS.filter(t => !allBooked.includes(t) && !isTimePast(t, date));
+            const totalSlots = ALL_SLOTS.length;
+            const bookedCount = allBooked.length;
+
+            const slotCountEl = document.getElementById('slotCount');
+            if (slotCountEl) {
+                slotCountEl.innerHTML = `
+                    📊 Tổng: <strong>${totalSlots}</strong> khung giờ · 
+                    Đã đặt: <strong style="color:#DC2626;">${bookedCount}</strong> · 
+                    Trống: <strong style="color:#10B981;">${availableSlots.length}</strong>
+                `;
+            }
+
+            slotContainer.innerHTML = ALL_SLOTS.map(time => {
+                const isBooked = allBooked.includes(time);
+                const isPast = isTimePast(time, date);
+                const bookingInfo = bookedDetails.find(a => a.time === time);
+
+                let extraClass = '';
+                let extraText = '';
+                let onclickAttr = '';
+
+                if (isBooked) {
+                    extraClass = 'booked';
+                    extraText = `🔴 Đã đặt`;
+                    onclickAttr = `onclick="showBookedAlert('${time}')"`;
+                } else if (isPast) {
+                    extraClass = 'past';
+                    extraText = '⏰ Đã qua';
+                    onclickAttr = `onclick="showPastAlert()"`;
+                } else {
+                    extraClass = 'available';
+                    extraText = '✅ Trống';
+                    onclickAttr = `onclick="selectSlot(this, '${time}')"`;
+                }
+
+                return `<div class="slot ${extraClass}" ${onclickAttr}>
+                    ${time} ${extraText}
+                </div>`;
+            }).join('');
+
+            setTimeout(() => {
+                if (state.time) {
+                    const selectedSlot = Array.from(document.querySelectorAll('.slot'))
+                        .find(slot => slot.textContent.includes(state.time));
+                    if (selectedSlot) {
+                        selectedSlot.classList.add('selected');
+                        document.getElementById('btnS5').disabled = false;
+                    }
+                }
+            }, 100);
+        }
+
+        function showBookedAlert(time) {
+            alert(`🔴 Khung giờ ${time} đã có người đặt lịch.\nVui lòng chọn khung giờ khác.`);
+        }
+
+        function showPastAlert() {
+            alert('⏰ Khung giờ này đã qua. Vui lòng chọn khung giờ khác.');
+        }
+
+        function isTimePast(time, date) {
+            const today = new Date();
+            const checkDate = new Date(date + 'T' + time + ':00');
+            return checkDate < today;
+        }
+
+        function selectSlot(el, time) {
+            if (!state.date || !state.doctor) {
+                alert("⚠️ Vui lòng chọn ngày và bác sĩ trước khi chọn giờ!");
+                return;
+            }
+
+            document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+            el.classList.add('selected');
+
+            state.time = time;
+            document.getElementById('s-time').textContent = time;
+
+            const btn = document.getElementById('btnS5');
+            if (btn) btn.disabled = false;
+
+            console.log(`✅ Đã chọn: ${time}`);
+        }
+
+        function toggleRem(el, val) {
+            el.classList.toggle('sel');
+            const idx = state.reminders.indexOf(val);
+            if (idx >= 0) state.reminders.splice(idx, 1);
+            else state.reminders.push(val);
+            state.reminders.sort((a, b) => {
+                const order = { '1h': 1, '3h': 2, '1d': 3, '3d': 4 };
+                return order[a] - order[b];
+            });
+            document.getElementById('s-remind').textContent = state.reminders.join(', ') + ' trước';
+        }
+
+        // ============================================================
+        //  STEPS
+        // ============================================================
+        function gotoStep(n) {
+            if (n === 2 && !map) setTimeout(initMap, 100);
+            if (n === 2) {
+                renderClinicList();
+                const infoEl = document.getElementById('symMatchInfo');
+                if (state.specialty) {
+                    const count = countClinicsBySpecialty(state.specialty);
+                    if (infoEl) {
+                        infoEl.innerHTML = `🏥 Có <strong>${count}</strong> phòng khám phù hợp với chuyên khoa <strong>${state.specialty}</strong>`;
+                    }
+                } else {
+                    if (infoEl) {
+                        infoEl.innerHTML = `🏥 Hiển thị tất cả <strong>${clinics.length}</strong> phòng khám. Hãy chọn chuyên khoa để lọc.`;
+                    }
+                }
+            }
+            if (n === 3) { renderSpecFilterForClinic();
+                renderDoctors(); }
+            if (n === 5) renderConfirm();
+            state.step = n;
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById('step' + i).classList.toggle('active', i === n);
+                const s = document.getElementById('stp' + i);
+                s.classList.toggle('active', i === n);
+                s.classList.toggle('done', i < n);
+            }
+            if (n === 2 && map) setTimeout(() => map.invalidateSize(), 200);
+        }
+
+        function gotoStep2WithValidate() {
+            const name = document.getElementById('patName').value;
+            const phone = document.getElementById('patPhone').value;
+            const email = document.getElementById('patEmail').value;
+
+            const nameResult = validateName(name);
+            const phoneResult = validatePhone(phone);
+            const emailResult = validateEmail(email);
+
+            showFieldError('patName', 'nameError', nameResult);
+            showFieldError('patPhone', 'phoneError', phoneResult);
+            showFieldError('patEmail', 'emailError', emailResult);
+
+            if (!nameResult.valid || !phoneResult.valid || !emailResult.valid) {
+                document.querySelector('#step1 .card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            gotoStep(2);
+        }
+
+        function renderConfirm() {
+            const d = state.date ? new Date(state.date).toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit',
+                month: '2-digit', year: 'numeric' }) : '—';
+            document.getElementById('confirmSummary').innerHTML = `<table style="width:100%;border-collapse:collapse;">
+                ${cr('👤 Bệnh nhân',document.getElementById('patName').value||'—')}
+                ${cr('📧 Email',document.getElementById('patEmail').value||'—')}
+                ${cr('📞 SĐT',document.getElementById('patPhone').value||'—')}
+                ${cr('🏥 Phòng khám',state.clinic?.name||'—')}
+                ${cr('🔬 Chuyên khoa',state.specialty||'—')}
+                ${cr('👨‍⚕️ Bác sĩ',state.doctor?.name||'—')}
+                ${cr('📅 Ngày',d)}${cr('⏰ Giờ',state.time||'—')}
+                ${cr('🔔 Nhắc lịch',state.reminders.join(', ')+' trước')}
+                ${cr('🩺 Triệu chứng',document.getElementById('symptoms').value||'—')}
+            </table>`;
+        }
+
+        function cr(l, v) { return `<tr><td style="padding:4px 8px;color:var(--gray-400);font-size:0.76rem;font-weight:600;width:120px;">${l}</td><td style="padding:4px 8px;font-size:0.85rem;color:var(--gray-800);">${v}</td></tr>`; }
+
+        function updateSummary() {
+            document.getElementById('s-name').textContent = document.getElementById('patName').value || '—';
+            document.getElementById('s-email').textContent = document.getElementById('patEmail').value || '—';
+        }
+
+        function updateCounts() {
+            document.getElementById('docCount').textContent = doctors.length;
+            document.getElementById('cliCount').textContent = clinics.length;
+            document.getElementById('apptCount').textContent = appointments.length;
+        }
+
+        function resetApp() {
+            state = {
+                step: 1,
+                clinic: null,
+                doctor: null,
+                specialty: null,
+                date: null,
+                time: null,
+                reminders: ['1h', '1d'],
+                userLatLng: state.userLatLng
+            };
+
+            ['patName', 'patEmail', 'patPhone', 'patDob', 'symptoms', 'notes', 'apptDate'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+
+            document.getElementById('successCard').classList.remove('show');
+            document.getElementById('confirmCard').style.display = 'block';
+
+            ['s-name', 's-email', 's-clinic', 's-dist', 's-spec', 's-doctor', 's-date', 's-time'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '—';
+            });
+            document.getElementById('s-remind').textContent = '1h, 1d trước';
+
+            if (routingControl && map) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+
+            const slotGrid = document.getElementById('slotGrid');
+            if (slotGrid) slotGrid.innerHTML = '<div class="empty-state">📅 Chọn ngày để xem khung giờ</div>';
+
+            gotoStep(1);
+            console.log('🔄 Đã reset form để đặt lịch mới');
+        }
+
+        // ============================================================
+        //  EMAIL FUNCTIONS
+        // ============================================================
+        function generateAppointmentEmail(appointmentData) {
+            const {
+                code,
+                patient_name,
+                doctor_name,
+                clinic_name,
+                clinic_address,
+                specialty,
+                date,
+                time,
+                symptoms,
+                notes,
+                reminders
+            } = appointmentData;
+
+            const dateFormatted = new Date(date).toLocaleDateString('vi-VN', {
+                weekday: 'long',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+
+            const emailContent = `
+                <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8fafc;">
+                    <div style="background: #ffffff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+                        <div style="text-align: center; border-bottom: 2px solid #14B8A6; padding-bottom: 20px; margin-bottom: 24px;">
+                            <h2 style="font-size: 24px; font-weight: 800; color: #1A3A5C; margin: 0;">
+                                🏥 <span style="color: #14B8A6;">MedBook</span>
+                            </h2>
+                            <div style="margin-top: 8px;">
+                                <span style="display: inline-block; background: #14B8A6; color: white; padding: 4px 16px; border-radius: 40px; font-size: 12px; font-weight: 600;">✅ XÁC NHẬN ĐẶT LỊCH</span>
+                            </div>
+                        </div>
+                        
+                        <p style="font-size: 16px; color: #1A3A5C; margin-bottom: 8px;">
+                            <strong>Xin chào ${patient_name},</strong>
+                        </p>
+                        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+                            Bạn đã đặt lịch khám thành công tại <strong>MedBook</strong>. 
+                            Vui lòng kiểm tra thông tin chi tiết dưới đây:
+                        </p>
+                        
+                        <div style="background: #f1f5f9; border-radius: 10px; padding: 12px 20px; text-align: center; font-size: 20px; font-weight: 800; color: #1A3A5C; letter-spacing: 3px; margin: 16px 0; border: 2px dashed #14B8A6;">
+                            📋 MÃ ĐẶT LỊCH: ${code}
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;">
+                            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px;">
+                                <div style="font-size: 12px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">👤 Bệnh nhân</div>
+                                <div style="font-size: 14px; font-weight: 600; color: #0F172A; margin-top: 2px;">${patient_name}</div>
+                            </div>
+                            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px;">
+                                <div style="font-size: 12px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">📅 Ngày khám</div>
+                                <div style="font-size: 14px; font-weight: 600; color: #0F172A; margin-top: 2px;">${dateFormatted}</div>
+                            </div>
+                            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px;">
+                                <div style="font-size: 12px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">⏰ Giờ khám</div>
+                                <div style="font-size: 14px; font-weight: 600; color: #0F172A; margin-top: 2px;">${time}</div>
+                            </div>
+                            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px;">
+                                <div style="font-size: 12px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">🔬 Chuyên khoa</div>
+                                <div style="font-size: 14px; font-weight: 600; color: #0F172A; margin-top: 2px;">${specialty}</div>
+                            </div>
+                            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; grid-column: 1 / -1;">
+                                <div style="font-size: 12px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">🏥 Phòng khám</div>
+                                <div style="font-size: 14px; font-weight: 600; color: #0F172A; margin-top: 2px;">${clinic_name}</div>
+                                <div style="font-size: 12px; color: #64748B; margin-top: 2px;">📍 ${clinic_address}</div>
+                            </div>
+                            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; grid-column: 1 / -1;">
+                                <div style="font-size: 12px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">👨‍⚕️ Bác sĩ</div>
+                                <div style="font-size: 14px; font-weight: 600; color: #0F172A; margin-top: 2px;">${doctor_name}</div>
+                            </div>
+                            ${symptoms ? `
+                            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; grid-column: 1 / -1;">
+                                <div style="font-size: 12px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">🩺 Triệu chứng</div>
+                                <div style="font-size: 14px; font-weight: 400; color: #0F172A; margin-top: 2px;">${symptoms}</div>
+                            </div>
+                            ` : ''}
+                            ${notes ? `
+                            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; grid-column: 1 / -1;">
+                                <div style="font-size: 12px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">📝 Ghi chú</div>
+                                <div style="font-size: 14px; font-weight: 400; color: #0F172A; margin-top: 2px;">${notes}</div>
+                            </div>
+                            ` : ''}
+                            <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; grid-column: 1 / -1;">
+                                <div style="font-size: 12px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">🔔 Nhắc lịch</div>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+                                    ${reminders.map(r => `<span style="background: #E6F6F3; color: #067061; padding: 2px 12px; border-radius: 40px; font-size: 12px; font-weight: 600;">${r} trước</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #FEF3C7; border-radius: 10px; padding: 16px; margin: 16px 0; border-left: 4px solid #F59E0B;">
+                            <p style="font-size: 13px; color: #92400E; margin: 0; line-height: 1.6;">
+                                <strong>📌 Lưu ý:</strong> Vui lòng đến trước giờ hẹn 15 phút để làm thủ tục. 
+                                Mang theo CCCD/CMND và các giấy tờ liên quan (nếu có). 
+                                Nếu cần hỗ trợ, vui lòng liên hệ hotline: <strong>1900 1234</strong>
+                            </p>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 20px 0;">
+                            <a href="#" style="display: inline-block; background: #14B8A6; color: white; padding: 10px 24px; border-radius: 40px; text-decoration: none; font-weight: 600;">📋 Xem chi tiết lịch hẹn</a>
+                        </div>
+                        
+                        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 13px; color: #94A3B8;">
+                            <p>© 2026 MedBook - Nền tảng đặt lịch khám bệnh #1 Việt Nam</p>
+                            <p style="font-size: 12px; color: #CBD5E1;">
+                                Email này được gửi tự động từ hệ thống MedBook. Vui lòng không trả lời email này.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return {
+                to_email: document.getElementById('patEmail').value,
+                to_name: patient_name,
+                from_name: 'MedBook - Hệ thống đặt lịch khám bệnh',
+                subject: `✅ Xác nhận đặt lịch khám - Mã ${code}`,
+                message: emailContent,
+                appointment_code: code,
+                patient_name: patient_name,
+                doctor_name: doctor_name,
+                clinic_name: clinic_name,
+                appointment_date: dateFormatted,
+                appointment_time: time
+            };
+        }
+
+        async function sendAppointmentEmail(appointmentData) {
+            const emailData = generateAppointmentEmail(appointmentData);
+
+            const btn = document.querySelector('.btn-teal');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Đang gửi email...';
+            btn.disabled = true;
+
+            try {
+                const response = await emailjs.send(
+                    EMAIL_CONFIG.serviceID,
+                    EMAIL_CONFIG.templateID,
+                    {
+                        to_email: emailData.to_email,
+                        to_name: emailData.to_name,
+                        from_name: emailData.from_name,
+                        subject: emailData.subject,
+                        message: emailData.message,
+                        patient_name: emailData.patient_name,
+                        doctor_name: emailData.doctor_name,
+                        clinic_name: emailData.clinic_name,
+                        appointment_date: emailData.appointment_date,
+                        appointment_time: emailData.appointment_time,
+                        appointment_code: emailData.appointment_code
+                    }
+                );
+
+                console.log('📧 Email đã gửi thành công!', response);
+                return true;
+            } catch (error) {
+                console.error('❌ Lỗi gửi email:', error);
+
+                let userMessage = 'Không thể gửi email xác nhận. ';
+                if (error.status === 400) {
+                    userMessage += 'Email không hợp lệ hoặc template không đúng.';
+                } else if (error.status === 401) {
+                    userMessage += 'API Key không hợp lệ. Vui lòng kiểm tra cấu hình.';
+                } else if (error.status === 429) {
+                    userMessage += 'Đã vượt quá giới hạn gửi email. Vui lòng thử lại sau.';
+                } else {
+                    userMessage += 'Vui lòng kiểm tra lại email hoặc thử lại sau.';
+                }
+
+                alert('❌ ' + userMessage);
+                return false;
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function resendEmail() {
+            const code = document.getElementById('apptCode').textContent;
+            const appointment = appointments.find(a => a.id === code);
+
+            if (!appointment) {
+                alert('❌ Không tìm thấy lịch hẹn!');
+                return;
+            }
+
+            const doctor = doctors.find(d => d.id === appointment.doctor_id);
+            const clinic = clinics.find(c => c.id === appointment.clinic_id);
+
+            const appointmentData = {
+                code: appointment.id,
+                patient_name: appointment.patient_name,
+                doctor_name: doctor?.name || 'Không xác định',
+                clinic_name: clinic?.name || 'Không xác định',
+                clinic_address: clinic?.address || 'Không xác định',
+                specialty: state.specialty || doctor?.specialty || 'Không xác định',
+                date: appointment.date,
+                time: appointment.time,
+                symptoms: document.getElementById('symptoms').value || 'Không có',
+                notes: document.getElementById('notes').value || 'Không có',
+                reminders: state.reminders
+            };
+
+            const btn = event?.target || document.querySelector('.btn-outline.btn-sm');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Đang gửi...';
+            btn.disabled = true;
+
+            const success = await sendAppointmentEmail(appointmentData);
+
+            btn.textContent = originalText;
+            btn.disabled = false;
+
+            if (success) {
+                alert('✅ Đã gửi lại email xác nhận thành công!');
+            } else {
+                alert('❌ Gửi email thất bại. Vui lòng kiểm tra lại email của bạn.');
+            }
+        }
+
+        // ============================================================
+        //  CONFIRM BOOKING
+        // ============================================================
+        async function confirmBooking() {
+            if (!validateAllFields()) {
+                document.querySelector('#step1 .card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (state.step === 5) gotoStep(1);
+                return;
+            }
+
+            const name = document.getElementById('patName').value.trim();
+            const email = document.getElementById('patEmail').value.trim();
+            const symptoms = document.getElementById('symptoms').value.trim();
+            const notes = document.getElementById('notes').value.trim();
+
+            if (!name || !email || !state.clinic || !state.doctor || !state.date || !state.time) {
+                alert('⚠️ Vui lòng điền đầy đủ thông tin!');
+                return;
+            }
+
+            const duplicate = appointments.some(a =>
+                a.date === state.date &&
+                a.doctor_id === state.doctor.id &&
+                a.time === state.time &&
+                a.status !== 'cancelled'
+            );
+
+            if (duplicate) {
+                alert(`❌ Lỗi: Bác sĩ ${state.doctor.name} đã có lịch hẹn vào lúc ${state.time} ngày ${state.date}. Vui lòng chọn giờ khác.`);
+                gotoStep(4);
+                loadTimeSlots();
+                return;
+            }
+
+            const code = 'MED-' + String(Date.now()).slice(-6) + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+
+            const appointmentData = {
+                code: code,
+                patient_name: name,
+                doctor_id: state.doctor.id,
+                doctor_name: state.doctor.name,
+                clinic_id: state.clinic.id,
+                clinic_name: state.clinic.name,
+                clinic_address: state.clinic.address,
+                specialty: state.specialty || state.doctor.specialty,
+                date: state.date,
+                time: state.time,
+                symptoms: symptoms || 'Không có',
+                notes: notes || 'Không có',
+                reminders: state.reminders,
+                status: 'confirmed'
+            };
+
+            appointments.push({
+                id: code,
+                patient_name: name,
+                doctor_id: state.doctor.id,
+                clinic_id: state.clinic.id,
+                date: state.date,
+                time: state.time,
+                status: 'confirmed'
+            });
+
+            saveData();
+            updateCounts();
+
+            const emailSent = await sendAppointmentEmail(appointmentData);
+
+            document.getElementById('apptCode').textContent = code;
+            document.getElementById('emailDisplay').textContent = email;
+
+            const successCard = document.getElementById('successCard');
+
+            // Xóa email status cũ nếu có
+            const oldStatus = successCard.querySelector('.email-status');
+            if (oldStatus) oldStatus.remove();
+
+            const emailStatus = document.createElement('div');
+            emailStatus.className = 'email-status';
+            emailStatus.style.cssText = `
+                background: ${emailSent ? '#D1FAE5' : '#FEE2E2'};
+                color: ${emailSent ? '#065F46' : '#991B1B'};
+                border-radius: 10px;
+                padding: 12px 16px;
+                margin-top: 12px;
+                font-size: 0.84rem;
+                font-weight: 600;
+            `;
+            emailStatus.textContent = emailSent ?
+                '✅ Email xác nhận đã gửi thành công!' :
+                '⚠️ Không thể gửi email xác nhận. Bạn có thể bấm "Gửi lại email" để thử lại.';
+            successCard.appendChild(emailStatus);
+
+            document.getElementById('confirmCard').style.display = 'none';
+            document.getElementById('successCard').classList.add('show');
+
+            document.getElementById('stp5').classList.add('done');
+            document.getElementById('stp5').classList.remove('active');
+
+            console.log(`✅ Đặt lịch thành công! Mã: ${code}`);
+            console.log(`📧 Email đã gửi đến: ${email}`);
+        }
+
+        // ============================================================
+        //  ADMIN FUNCTIONS
+        // ============================================================
+        function adminTab(t) {
+            document.querySelectorAll('.admin-menu-item').forEach(x => x.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById('atab-dashboard').style.display = t === 'dashboard' ? 'block' : 'none';
+            document.getElementById('atab-appointments').style.display = t === 'appointments' ? 'block' : 'none';
+            document.getElementById('atab-doctors').style.display = t === 'doctors' ? 'block' : 'none';
+            document.getElementById('atab-clinics').style.display = t === 'clinics' ? 'block' : 'none';
+            if (t === 'clinics') setTimeout(initAdminMap, 200);
+            if (t === 'appointments') renderApptTable();
+            if (t === 'doctors') renderDocTable();
+            if (t === 'clinics') renderCliTable();
+        }
+
+        function refreshAdminStats() {
+            document.getElementById('ad-appts').textContent = appointments.length;
+            document.getElementById('ad-docs').textContent = doctors.length;
+            document.getElementById('ad-clis').textContent = clinics.length;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('ad-today').textContent = appointments.filter(a => a.date === today).length;
+            const recent = [...appointments].sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 8);
+            document.getElementById('dashApptTbl').innerHTML =
+                `<tr><th>Mã</th><th>Bệnh nhân</th><th>Bác sĩ</th><th>Ngày</th><th>Giờ</th><th>Trạng thái</th></tr>` +
+                recent.map(a => {
+                    const doc = doctors.find(d => d.id === a.doctor_id);
+                    return `<tr><td>${a.id}</td><td>${a.patient_name}</td><td>${doc?.name||a.doctor_id}</td><td>${a.date}</td><td>${a.time}</td><td>${statusBadge(a.status)}</td></tr>`;
+                }).join('');
+        }
+
+        function statusBadge(s) {
+            if (s === 'confirmed') return `<span class="badge badge-green">✅ Đã xác nhận</span>`;
+            if (s === 'cancelled') return `<span class="badge badge-red">❌ Đã hủy</span>`;
+            return `<span class="badge badge-orange">⏳ Chờ</span>`;
+        }
+
+        function renderApptTable() {
+            const q = (document.getElementById('apptSearch')?.value || '').toLowerCase();
+            const f = document.getElementById('apptFilter')?.value || '';
+            let data = appointments.filter(a => (!q || a.patient_name.toLowerCase().includes(q)) && (!f || a.status === f));
+            document.getElementById('apptTable').innerHTML =
+                `<tr><th>Mã</th><th>Bệnh nhân</th><th>Bác sĩ</th><th>Phòng khám</th><th>Ngày</th><th>Giờ</th><th>Trạng thái</th><th>Thao tác</th></tr>` +
+                data.map(a => {
+                    const doc = doctors.find(d => d.id === a.doctor_id);
+                    const cli = clinics.find(c => c.id === a.clinic_id);
+                    return `<tr>
+                        <td style="font-weight:700;color:var(--primary)">${a.id}</td>
+                        <td>${a.patient_name}</td>
+                        <td>${doc?.name||a.doctor_id}</td>
+                        <td style="font-size:0.78rem;">${cli?.name||a.clinic_id}</td>
+                        <td>${a.date}</td><td>${a.time}</td>
+                        <td>${statusBadge(a.status)}</td>
+                        <td><div class="tbl-actions">
+                            <button class="btn btn-outline btn-sm" onclick="openModal('appt','${a.id}')">✏️</button>
+                            <button class="btn btn-red btn-sm" onclick="confirmDelete('appt','${a.id}','lịch hẹn ${a.id}')">🗑️</button>
+                        </div></td>
+                    </tr>`;
+                }).join('');
+        }
+
+        function renderDocTable() {
+            populateSpecFilter();
+            const q = (document.getElementById('docSearch')?.value || '').toLowerCase();
+            const f = document.getElementById('docSpecFilter')?.value || '';
+            let data = doctors.filter(d => (!q || d.name.toLowerCase().includes(q)) && (!f || d.specialty === f));
+            document.getElementById('docTable').innerHTML =
+                `<tr><th>Mã</th><th>Họ tên</th><th>Chuyên khoa</th><th>Phòng khám</th><th>Kinh nghiệm</th><th>Đánh giá</th><th>Thao tác</th></tr>` +
+                data.map(d => {
+                    const cli = clinics.find(c => c.id === d.clinic_id);
+                    return `<tr>
+                        <td style="font-weight:700;color:var(--primary)">${d.id}</td>
+                        <td>${d.name}</td><td><span class="badge badge-blue">${d.specialty}</span></td>
+                        <td style="font-size:0.78rem;">${cli?.name||d.clinic_id}</td>
+                        <td>${d.experience} năm</td>
+                        <td><span class="badge badge-green">⭐ ${d.rating}</span></td>
+                        <td><div class="tbl-actions">
+                            <button class="btn btn-outline btn-sm" onclick="openModal('doctor','${d.id}')">✏️</button>
+                            <button class="btn btn-red btn-sm" onclick="confirmDelete('doctor','${d.id}','bác sĩ ${d.name}')">🗑️</button>
+                        </div></td>
+                    </tr>`;
+                }).join('');
+        }
+
+        function populateSpecFilter() {
+            const sel = document.getElementById('docSpecFilter');
+            const cur = sel.value;
+            const specs = getSpecialties();
+            sel.innerHTML = '<option value="">Tất cả chuyên khoa</option>' + specs.map(s =>
+                `<option value="${s}">${s}</option>`).join('');
+            sel.value = cur;
+        }
+
+        function renderCliTable() {
+            const q = (document.getElementById('cliSearch')?.value || '').toLowerCase();
+            let data = clinics.filter(c => !q || c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q));
+            document.getElementById('cliTable').innerHTML =
+                `<tr><th>Mã</th><th>Tên phòng khám</th><th>Địa chỉ</th><th>Toạ độ</th><th>Chuyên khoa</th><th>Thao tác</th></tr>` +
+                data.map(c => `<tr>
+                    <td style="font-weight:700;color:var(--primary)">${c.id}</td>
+                    <td>${c.name}</td>
+                    <td style="font-size:0.78rem;">${c.address}</td>
+                    <td style="font-size:0.76rem;color:var(--gray-400);">${parseFloat(c.lat).toFixed(4)}, ${parseFloat(c.lng).toFixed(4)}</td>
+                    <td style="font-size:0.76rem;">${c.specialties.split(',').slice(0,3).join(', ')}${c.specialties.split(',').length>3?'...':''}</td>
+                    <td><div class="tbl-actions">
+                        <button class="btn btn-outline btn-sm" onclick="openModal('clinic','${c.id}')">✏️</button>
+                        <button class="btn btn-red btn-sm" onclick="confirmDelete('clinic','${c.id}','phòng khám ${c.name}')">🗑️</button>
+                    </div></td>
+                </tr>`).join('');
+            if (adminMap) refreshAdminMarkers();
+        }
+
+        // ============================================================
+        //  ADMIN MAP
+        // ============================================================
+        function initAdminMap() {
+            if (adminMap) { adminMap.invalidateSize(); return; }
+            adminMap = L.map('adminMap').setView([21.028, 105.852], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(
+                adminMap);
+            refreshAdminMarkers();
+        }
+
+        function refreshAdminMarkers() {
+            Object.values(adminMarkersMap).forEach(m => adminMap.removeLayer(m));
+            adminMarkersMap = {};
+            clinics.forEach(c => {
+                const m = L.marker([parseFloat(c.lat), parseFloat(c.lng)], {
+                    icon: L.divIcon({
+                        html: `<div style="background:var(--primary);color:#fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.2);border:2px solid #fff">🏥</div>`,
+                        className: '',
+                        iconSize: [34, 34],
+                        iconAnchor: [17, 17]
+                    })
+                }).addTo(adminMap).bindPopup(`<b>${c.name}</b><br>${c.address}<br><small>${c.specialties}</small>`);
+                adminMarkersMap[c.id] = m;
+            });
+        }
+
+        // ============================================================
+        //  MODALS
+        // ============================================================
+        function openModal(type, id) {
+            editTarget = { type, id };
+            if (type === 'appt') { populateApptModal(id);
+                document.getElementById('modalAppt').classList.add('show'); } else if (type === 'doctor') { populateDocModal(
+                    id);
+                document.getElementById('modalDoctor').classList.add('show'); } else if (type === 'clinic') { populateCliModal(
+                    id);
+                document.getElementById('modalClinic').classList.add('show');
+                setTimeout(initPickerMap, 200); }
+        }
+
+        function closeModal(t) { document.getElementById('modal' + t).classList.remove('show'); }
+
+        function populateApptModal(id) {
+            const isNew = id === 'new';
+            document.getElementById('mApptTitle').textContent = isNew ? 'Thêm lịch hẹn' : 'Sửa lịch hẹn';
+            document.getElementById('mApptDoctor').innerHTML = doctors.map(d =>
+                `<option value="${d.id}">${d.name} – ${d.specialty}</option>`
+            ).join('');
+            document.getElementById('mApptClinic').innerHTML = clinics.map(c =>
+                `<option value="${c.id}">${c.name}</option>`
+            ).join('');
+            document.getElementById('mApptTime').innerHTML = ALL_SLOTS.map(t =>
+                `<option value="${t}">${t}</option>`
+            ).join('');
+            if (!isNew) {
+                const a = appointments.find(x => x.id === id);
+                if (a) {
+                    document.getElementById('mApptPatient').value = a.patient_name;
+                    document.getElementById('mApptDoctor').value = a.doctor_id;
+                    document.getElementById('mApptClinic').value = a.clinic_id;
+                    document.getElementById('mApptDate').value = a.date;
+                    document.getElementById('mApptTime').value = a.time;
+                    document.getElementById('mApptStatus').value = a.status;
+                }
+            } else {
+                document.getElementById('mApptPatient').value = '';
+                document.getElementById('mApptDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('mApptStatus').value = 'confirmed';
+            }
+        }
+
+        function saveAppt() {
+            const pat = document.getElementById('mApptPatient').value.trim();
+            const docId = document.getElementById('mApptDoctor').value;
+            const cliId = document.getElementById('mApptClinic').value;
+            const date = document.getElementById('mApptDate').value;
+            const time = document.getElementById('mApptTime').value;
+            const status = document.getElementById('mApptStatus').value;
+            if (!pat || !date) { alert('Vui lòng điền đầy đủ thông tin!'); return; }
+            if (editTarget.id === 'new') {
+                const newId = 'A' + String(appointments.length + 100).padStart(3, '0');
+                appointments.push({ id: newId, patient_name: pat, doctor_id: docId, clinic_id: cliId, date, time,
+                    status });
+            } else {
+                const idx = appointments.findIndex(a => a.id === editTarget.id);
+                if (idx >= 0) appointments[idx] = { ...appointments[idx], patient_name: pat, doctor_id: docId,
+                    clinic_id: cliId, date, time, status };
+            }
+            closeModal('Appt');
+            renderApptTable();
+            refreshAdminStats();
+            updateCounts();
+        }
+
+        function populateDocModal(id) {
+            const isNew = id === 'new';
+            document.getElementById('mDocTitle').textContent = isNew ? 'Thêm bác sĩ' : 'Sửa bác sĩ';
+            document.getElementById('mDocClinic').innerHTML = clinics.map(c =>
+                `<option value="${c.id}">${c.name}</option>`).join('');
+            if (!isNew) {
+                const d = doctors.find(x => x.id === id);
+                if (d) {
+                    document.getElementById('mDocName').value = d.name;
+                    document.getElementById('mDocSpec').value = d.specialty;
+                    document.getElementById('mDocClinic').value = d.clinic_id;
+                    document.getElementById('mDocExp').value = d.experience;
+                    document.getElementById('mDocRating').value = d.rating;
+                    document.getElementById('mDocSymptoms').value = d.symptoms;
+                }
+            } else {
+                ['mDocName', 'mDocSpec', 'mDocExp', 'mDocRating', 'mDocSymptoms'].forEach(id => document.getElementById(
+                    id).value = '');
+            }
+        }
+
+        function saveDoctor() {
+            const name = document.getElementById('mDocName').value.trim();
+            const spec = document.getElementById('mDocSpec').value.trim();
+            const cliId = document.getElementById('mDocClinic').value;
+            const exp = parseInt(document.getElementById('mDocExp').value) || 0;
+            const rating = parseFloat(document.getElementById('mDocRating').value) || 4.5;
+            const syms = document.getElementById('mDocSymptoms').value.trim();
+            if (!name || !spec) { alert('Vui lòng điền tên và chuyên khoa!'); return; }
+            if (editTarget.id === 'new') {
+                const newId = 'D' + String(doctors.length + 100).padStart(3, '0');
+                doctors.push({ id: newId, name, specialty: spec, clinic_id: cliId, experience: exp, rating,
+                    symptoms: syms });
+            } else {
+                const idx = doctors.findIndex(d => d.id === editTarget.id);
+                if (idx >= 0) doctors[idx] = { ...doctors[idx], name, specialty: spec, clinic_id: cliId,
+                    experience: exp, rating, symptoms: syms };
+            }
+            closeModal('Doctor');
+            renderDocTable();
+            initSpecTags();
+            updateCounts();
+        }
+
+        function populateCliModal(id) {
+            const isNew = id === 'new';
+            document.getElementById('mCliTitle').textContent = isNew ? 'Thêm phòng khám' : 'Sửa phòng khám';
+            if (!isNew) {
+                const c = clinics.find(x => x.id === id);
+                if (c) {
+                    document.getElementById('mCliName').value = c.name;
+                    document.getElementById('mCliAddr').value = c.address;
+                    document.getElementById('mCliLat').value = c.lat;
+                    document.getElementById('mCliLng').value = c.lng;
+                    document.getElementById('mCliSpecs').value = c.specialties;
+                }
+            } else {
+                ['mCliName', 'mCliAddr', 'mCliLat', 'mCliLng', 'mCliSpecs'].forEach(id => document.getElementById(id)
+                    .value = '');
+            }
+        }
+
+        function initPickerMap() {
+            if (pickerMap) { pickerMap.invalidateSize(); return; }
+            pickerMap = L.map('pickerMap').setView([21.028, 105.852], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(
+                pickerMap);
+            pickerMap.on('click', e => {
+                const { lat, lng } = e.latlng;
+                document.getElementById('mCliLat').value = lat.toFixed(6);
+                document.getElementById('mCliLng').value = lng.toFixed(6);
+                if (pickerMarker) pickerMarker.setLatLng([lat, lng]);
+                else {
+                    pickerMarker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            html: `<div style="background:#EF4444;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3)">📌</div>`,
+                            className: '',
+                            iconSize: [28, 28],
+                            iconAnchor: [14, 14]
+                        })
+                    }).addTo(pickerMap).bindPopup('📌 Vị trí đã chọn');
+                }
+            });
+            const lat = parseFloat(document.getElementById('mCliLat').value);
+            const lng = parseFloat(document.getElementById('mCliLng').value);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                pickerMap.setView([lat, lng], 15);
+                pickerMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        html: `<div style="background:#EF4444;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3)">📌</div>`,
+                        className: '',
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14]
+                    })
+                }).addTo(pickerMap);
+            }
+        }
+
+        function updatePickerMarker() {
+            const lat = parseFloat(document.getElementById('mCliLat').value);
+            const lng = parseFloat(document.getElementById('mCliLng').value);
+            if (isNaN(lat) || isNaN(lng) || !pickerMap) return;
+            if (pickerMarker) pickerMarker.setLatLng([lat, lng]);
+            else pickerMarker = L.marker([lat, lng]).addTo(pickerMap);
+            pickerMap.setView([lat, lng], 15);
+        }
+
+        function geocodeClinicAddr() {
+            clearTimeout(geocodeTimer);
+            const addr = document.getElementById('mCliAddr').value.trim();
+            if (addr.length < 5) return;
+            geocodeTimer = setTimeout(async () => {
+                try {
+                    const q = encodeURIComponent(addr + ', Hà Nội, Việt Nam');
+                    const r = await fetch(
+                        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=vn`, {
+                            headers: { 'Accept-Language': 'vi', 'User-Agent': 'MedBook-HaNoi/1.0' }
+                        });
+                    const data = await r.json();
+                    if (data.length) {
+                        const lat = parseFloat(data[0].lat),
+                            lng = parseFloat(data[0].lon);
+                        document.getElementById('mCliLat').value = lat.toFixed(6);
+                        document.getElementById('mCliLng').value = lng.toFixed(6);
+                        updatePickerMarker();
+                    }
+                } catch (e) { console.warn('Geocode failed', e); }
+            }, 900);
+        }
+
+        function saveClinic() {
+            const name = document.getElementById('mCliName').value.trim();
+            const addr = document.getElementById('mCliAddr').value.trim();
+            const lat = parseFloat(document.getElementById('mCliLat').value);
+            const lng = parseFloat(document.getElementById('mCliLng').value);
+            const specs = document.getElementById('mCliSpecs').value.trim();
+            if (!name || !addr || isNaN(lat) || isNaN(lng)) { alert('Vui lòng điền đầy đủ thông tin và chọn toạ độ!'); return; }
+            if (editTarget.id === 'new') {
+                const newId = 'C' + String(clinics.length + 100).padStart(3, '0');
+                const newC = { id: newId, name, address: addr, lat, lng, specialties: specs };
+                clinics.push(newC);
+                if (map) addClinicMarker(newC);
+            } else {
+                const idx = clinics.findIndex(c => c.id === editTarget.id);
+                if (idx >= 0) {
+                    clinics[idx] = { ...clinics[idx], name, address: addr, lat, lng, specialties: specs };
+                    if (clinicMarkersMap[editTarget.id]) clinicMarkersMap[editTarget.id].setLatLng([lat, lng])
+                        .setPopupContent(`<b>${name}</b><br>${addr}`);
+                }
+            }
+            closeModal('Clinic');
+            renderCliTable();
+            renderClinicList();
+            updateCounts();
+            refreshAdminMarkers();
+            pickerMap = null;
+            pickerMarker = null;
+        }
+
+        function confirmDelete(type, id, label) {
+            deleteTarget = { type, id };
+            document.getElementById('confirmDelMsg').textContent =
+                `Bạn có chắc muốn xóa "${label}"? Hành động này không thể hoàn tác.`;
+            document.getElementById('modalConfirm').classList.add('show');
+        }
+
+        function execDelete() {
+            const { type, id } = deleteTarget;
+            if (type === 'appt') appointments = appointments.filter(a => a.id !== id);
+            else if (type === 'doctor') doctors = doctors.filter(d => d.id !== id);
+            else if (type === 'clinic') {
+                clinics = clinics.filter(c => c.id !== id);
+                if (clinicMarkersMap[id]) { map && map.removeLayer(clinicMarkersMap[id]);
+                    delete clinicMarkersMap[id]; }
+                if (adminMarkersMap[id]) { adminMap && adminMap.removeLayer(adminMarkersMap[id]);
+                    delete adminMarkersMap[id]; }
+            }
+            closeModal('Confirm');
+            renderApptTable();
+            renderDocTable();
+            renderCliTable();
+            refreshAdminStats();
+            renderClinicList();
+            updateCounts();
+            initSpecTags();
+        }
+
+        // ============================================================
+        //  VALIDATION
+        // ============================================================
+        function validateName(name) {
+            const regex = /^[A-Za-zÀ-Ỹà-ỹĂăÂâĐđÊêÔôƠơƯư\s\-\.]+$/;
+            if (!name.trim()) return { valid: false, message: '⚠️ Vui lòng nhập họ và tên' };
+            if (!regex.test(name.trim())) return { valid: false, message: '⚠️ Tên không được chứa số hoặc ký tự đặc biệt' };
+            if (name.trim().split(/\s+/).length < 2) return { valid: false, message: '⚠️ Vui lòng nhập đầy đủ họ và tên (ít nhất 2 từ)' };
+            return { valid: true, message: '' };
+        }
+
+        function validateAge(dob) {
+            if (!dob) return { valid: true, message: '' };
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            if (age < 0) return { valid: false, message: '⚠️ Ngày sinh không hợp lệ' };
+            if (age > 200) return { valid: false, message: '⚠️ Tuổi không được vượt quá 200' };
+            return { valid: true, message: '' };
+        }
+
+        function validatePhone(phone) {
+            const phoneStr = phone.trim();
+            if (!phoneStr) return { valid: false, message: '⚠️ Vui lòng nhập số điện thoại' };
+            if (!/^[\d\s\+\-\(\)]+$/.test(phoneStr)) {
+                return { valid: false, message: '⚠️ Số điện thoại không được chứa ký tự đặc biệt' };
+            }
+            const cleanPhone = phoneStr.replace(/[\s\+\-\(\)]/g, '');
+            if (!/^\d+$/.test(cleanPhone)) {
+                return { valid: false, message: '⚠️ Số điện thoại chỉ được chứa số' };
+            }
+            if (cleanPhone.length < 9 || cleanPhone.length > 12) {
+                return { valid: false, message: '⚠️ Số điện thoại phải có từ 9-12 chữ số' };
+            }
+            return { valid: true, message: '' };
+        }
+
+        function validateEmail(email) {
+            const emailStr = email.trim();
+            if (!emailStr) return { valid: false, message: '⚠️ Vui lòng nhập email' };
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!regex.test(emailStr)) return { valid: false, message: '⚠️ Email không đúng định dạng' };
+            return { valid: true, message: '' };
+        }
+
+        function validateField(inputId, validatorFn, errorId) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            if (!input || !error) return;
+
+            input.addEventListener('input', function() {
+                const result = validatorFn(this.value);
+                if (result.valid) {
+                    this.classList.remove('input-error');
+                    this.classList.add('input-success');
+                    error.classList.remove('show');
+                } else {
+                    this.classList.remove('input-success');
+                    this.classList.add('input-error');
+                    error.textContent = result.message;
+                    error.classList.add('show');
+                }
+                updateSummary();
+            });
+        }
+
+        function validateAllFields() {
+            const name = document.getElementById('patName').value;
+            const dob = document.getElementById('patDob').value;
+            const phone = document.getElementById('patPhone').value;
+            const email = document.getElementById('patEmail').value;
+
+            const nameResult = validateName(name);
+            const ageResult = validateAge(dob);
+            const phoneResult = validatePhone(phone);
+            const emailResult = validateEmail(email);
+
+            showFieldError('patName', 'nameError', nameResult);
+            showFieldError('patDob', 'dobError', ageResult);
+            showFieldError('patPhone', 'phoneError', phoneResult);
+            showFieldError('patEmail', 'emailError', emailResult);
+
+            return nameResult.valid && ageResult.valid && phoneResult.valid && emailResult.valid;
+        }
+
+        function showFieldError(inputId, errorId, result) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            if (!input || !error) return;
+
+            if (!result.valid) {
+                input.classList.remove('input-success');
+                input.classList.add('input-error');
+                error.textContent = result.message;
+                error.classList.add('show');
+            } else {
+                input.classList.remove('input-error');
+                input.classList.add('input-success');
+                error.classList.remove('show');
+            }
+        }
+
+        // ============================================================
+        //  SAVE / LOAD DATA
+        // ============================================================
+        function saveData() {
+            localStorage.setItem('medbook_appointments', JSON.stringify(appointments));
+            localStorage.setItem('medbook_doctors', JSON.stringify(doctors));
+            localStorage.setItem('medbook_clinics', JSON.stringify(clinics));
+        }
+
+        function loadData() {
+            const savedAppts = localStorage.getItem('medbook_appointments');
+            if (savedAppts) appointments = JSON.parse(savedAppts);
+            const savedDoctors = localStorage.getItem('medbook_doctors');
+            if (savedDoctors) doctors = JSON.parse(savedDoctors);
+            const savedClinics = localStorage.getItem('medbook_clinics');
+            if (savedClinics) clinics = JSON.parse(savedClinics);
+        }
+
+        // ============================================================
+//  INIT
+// ============================================================
+const today = new Date().toISOString().split('T')[0];
+const apptDateInput = document.getElementById('apptDate');
+if (apptDateInput) {
+    apptDateInput.min = today;
+    apptDateInput.value = today;
+}
+
+// KHỞI TẠO
+initSpecTags();
+
+// === GHI ĐÈ DỮ LIỆU MỚI ===
+localStorage.setItem('medbook_doctors', JSON.stringify(doctors));
+localStorage.setItem('medbook_clinics', JSON.stringify(clinics));
+localStorage.setItem('medbook_appointments', JSON.stringify(appointments));
+
+// CẬP NHẬT GIAO DIỆN
+updateCounts();
+
+// VALIDATION
+validateField('patName', validateName, 'nameError');
+validateField('patDob', validateAge, 'dobError');
+validateField('patPhone', validatePhone, 'phoneError');
+validateField('patEmail', validateEmail, 'emailError');
+
+// FORM STATUS
+function updateFormStatus() {
+    const name = document.getElementById('patName').value;
+    const phone = document.getElementById('patPhone').value;
+    const email = document.getElementById('patEmail').value;
+    const status = document.getElementById('formStatus');
+
+    if (!status) return;
+
+    const nameOk = validateName(name).valid;
+    const phoneOk = validatePhone(phone).valid;
+    const emailOk = validateEmail(email).valid;
+
+    if (name && phone && email && nameOk && phoneOk && emailOk) {
+        status.innerHTML = '✅ Tất cả thông tin hợp lệ!';
+        status.style.color = '#10B981';
+        status.style.fontWeight = '600';
+    } else {
+        const errors = [];
+        if (!name || !nameOk) errors.push('Họ tên');
+        if (!phone || !phoneOk) errors.push('SĐT');
+        if (!email || !emailOk) errors.push('Email');
+        status.innerHTML = `⚠️ Vui lòng nhập đúng: ${errors.join(', ')}`;
+        status.style.color = '#F59E0B';
+        status.style.fontWeight = '500';
+    }
+}
+
+document.querySelectorAll('#step1 input, #step1 textarea').forEach(el => {
+    el.addEventListener('input', updateFormStatus);
+    el.addEventListener('change', updateFormStatus);
+});
+
+setTimeout(updateFormStatus, 100);
+
+// KEYBOARD EVENTS
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.show').forEach(o => {
+            o.classList.remove('show');
+        });
+    }
+});
+
+// RESIZE
+let resizeTimeout;
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        if (map) map.invalidateSize();
+        if (adminMap) adminMap.invalidateSize();
+    }, 300);
+});
+
+console.log('🏥 MedBook đã sẵn sàng!');
+console.log(`📊 Dữ liệu: ${clinics.length} phòng khám, ${doctors.length} bác sĩ, ${appointments.length} lịch hẹn`);
+console.log('📧 EmailJS đã cấu hình với template:', EMAIL_CONFIG.templateID);
+    </script>
+</body>
+</html>
